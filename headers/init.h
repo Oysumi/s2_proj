@@ -19,6 +19,6 @@ void freeScreen ( init_t * window ) ;
 
 void setTransparency ( game_t * game, init_t * window )  ;
 
-void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window ) ;
+void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window, game_t * game ) ;
 
 #endif

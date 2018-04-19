@@ -70,6 +70,10 @@ void bubImageInit ( game_t * game )
 
 	temp = SDL_LoadBMP ( "../img/bubs/bub_yellow.bmp" ) ;
 	game->bub_colors[7] = SDL_DisplayFormat ( temp ) ;
+	
+	SDL_FreeSurface ( temp ) ;
+	
+	game->currentOrientation = 22 ;
 }
 
 void gameInit ( game_t * game )
@@ -79,7 +83,7 @@ void gameInit ( game_t * game )
 	game->bub_array = ( int * * ) malloc ( BUB_NY * sizeof ( int * ) ) ;
 
 	/* We have to make sure that there are no bubbles on the screen at first */
-	bubarray_reset ( game ) ;
+	bubarray_init ( game ) ;
 
 	/* We fill the cells of the array with the different possible coordinates of the bubbles */
 	game->bub_center = ( int * * * ) malloc ( BUB_NY * sizeof ( int * * ) ) ;
@@ -119,10 +123,14 @@ void setTransparency ( game_t * game, init_t * window )
 	}
 }
 
-void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window )
+void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window, game_t * game )
 {
 	unsigned int i, j ;
+	unsigned int j_max ;
 	int color ; /* Will be the color of the cache (black) */
+	SDL_Rect * temp ;
+	
+	temp = ( SDL_Rect * ) malloc ( sizeof ( SDL_Rect ) ) ;
 
 	/* First, we draw a black cache */
 	SDL_Rect cache ;
@@ -147,9 +155,41 @@ void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window )
 	launcherImg.w = LAUNCHER_WIDTH ;
 	launcherImg.h = LAUNCHER_HEIGHT ;
 	launcherImg.x = 0 ;
-	launcherImg.y = LAUNCHER_HEIGHT * window->currentOrientation ;
+	launcherImg.y = LAUNCHER_HEIGHT * game->currentOrientation ;
 
 	SDL_BlitSurface ( window->launcher, &launcherImg, window->screen, launcher ) ;
+	
+	/* Finally, we draw the bubs */
+	SDL_Rect bubRect ;
+	
+	bubRect.x = 0 ;
+	bubRect.y = 0 ;
+	bubRect.w = BUB_SIZE ;
+	bubRect.h = BUB_SIZE ;
+	
+	for ( i = 0 ; i < BUB_NX ; i++ )
+	{
+	  j_max = ( i % 2 == 0 ) ? BUB_NX : BUB_NX - 1 ;
+	  
+	  for ( j = 0 ; j < j_max ; j++ )
+	  {
+	    /* We only draw the bubbles set to 1 in the array */
+	    if ( game->bub_array[i][j] > 0 )
+	    {
+	      /* Get the position of bubbles */
+	      temp = calculPosBub ( i, j, temp ) ;
+	      
+	      /* Display them */
+	      SDL_BlitSurface ( game->bub_colors[game->bub_array[i][j] - 1], &bubRect, window->screen, temp ) ;
+	    }
+	  }
+	}
+	
+	/* Display the current bubble which is moving */
+	SDL_BlitSurface ( bub->sprite, &bubRect, window->screen, &(bub->pos) ) ; /* &(bub->position) ? */
+	
+	free ( temp ) ;
+	
 }
 
 #endif

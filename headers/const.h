@@ -25,10 +25,6 @@
 #define LAUNCHER_CENTER 94
 #define LAUNCHER_DIV 48
 
-/* Order of the different directions in the picture */
-#define DIR_LEFT -1
-#define DIR_RIGHT 1
-
 /* Size and position of one bubble image */
 #define BUB_SIZE 40
 #define BUB_STARTX 339 // SCREEN_WIDTH - BUB_SIZE / 2

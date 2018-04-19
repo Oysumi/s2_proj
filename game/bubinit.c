@@ -8,7 +8,7 @@
 #include "SDL.h"
 
 /* Fills the different cells of the array with zeros */
-void bubarray_reset ( game_t * game )
+void bubarray_init ( game_t * game )
 {
 
 	unsigned int i, j ; /* Used for a loop */

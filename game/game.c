@@ -8,6 +8,9 @@
 int main ( int argc, char * argv[] )
 {
 
+	/* Nb : INITIALISER QUE DES POINTEURS POUR QUE LE CODE SOIT HOMOGENE */
+	/* FAIRE STRUCTURE TIME POUR SE SIMPLIFIER LA VIE */
+	
 	/* ************************ INITIALIZATION OF THE SCREEN ************************ */
 
 	/* Declaration of the variables */
@@ -22,7 +25,7 @@ int main ( int argc, char * argv[] )
 	game_t * game ;
 	game = ( game_t * ) malloc ( sizeof ( game_t ) ) ;
 
-	gameInit ( game ) ;
+	gameInit ( game ) ; /* Including bubarray_init */
 
 	/* ************************* INITIALIZATION OF THE SPRITES ********************** */
 
@@ -51,38 +54,57 @@ int main ( int argc, char * argv[] )
 	/* *********************** INITIALIZATION OF TIME VARIABLE ********************* */
 
 	/* Will regulate the number of image and the speed of the launcher */
-	int * previousTime ;
-	int * currentTime ;
+	int previousTime ;
+	int currentTime ;
 
-	*previousTime = 0 ;
+	previousTime = 0 ;
 
 	/* ************************ BEGINNING OF THE GAME ****************************** */
 
 	while ( !escape ( &in ) )
 	{
 
-		*currentTime = SDL_GetTicks () ;
+		currentTime = SDL_GetTicks () ;
 
 		HandleEvent ( &in, bub ) ;
-		updateScreen ( bub ) ;
+		updateScreen ( bub, launcherPos, screen, game ) ;
 
-		if ( timereached ( &previousTime, &currentTime ) )
+		/* We regulate the speed of the launcher thanks to a timer (50FPS) */
+		if ( timereached ( previousTime, currentTime ) )
 		{
-			launchermov ( &in ) ;
+		  launchermov ( &in, game, &previousTime, &currentTime, bub ) ;
 		}
 
 		if ( bub->launched )
 		{
-			bubLaunched ( ... ) ;
+		  bubLaunched ( ... ) ;
 		}
 
 		if ( bub->isMoving )
 		{
-
-		}
-
+		  /* We have to check different cases *
+		   * 1: The bubble is not moving anymore : maybe it hits the top or another bubble *
+		   * 2: The bubble is below the limit of the game board : reinitialization of the game *
+		   * 3: The bubble is moving : we calculate the trajectory */
+		  
+		  /* 1st case */
+		  if ( !bubismoving ( ... ) )
+		  {
+		    if ( bub_is_below ( ... ) )
+		    {
+		      bubarray_free ( game ) ;
+		      gameInit ( game ) ;
+		    }
+		    else
+		    {
+		      /* We place the bubble in the array so that it will be displayed */
+		    }
+		  }
+		 }
 	}
 
+	bubarray_freecenters ( game ) ;
+	bubarray_init ( game ) ;
 	free ( bub ) ;
 	free ( game ) ;
 	free ( screen ) ;

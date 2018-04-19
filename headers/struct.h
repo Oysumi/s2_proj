@@ -13,7 +13,6 @@ typedef struct {
 	SDL_Surface * screen ;
 	SDL_Surface * launcher ;
 	SDL_Surface * frame ;
-	unsigned int currentOrientation ;
 }init_t;
 
 /* Structure of access to the positions of bubbles and to their display */
@@ -21,8 +20,10 @@ typedef struct {
 	SDL_Surface * bub_colors[NUM_COLORS] ; /* Will store the various images of bubbles in different cells */
 	int * * bub_array ; 		   /* Inform about the positions and the colors of bubbles displayed on the game board */
 	int * * * bub_center ;		   /* Will store the coordinates of the center of bubbles
-									* First cell is for the abscissa .x *
-									* Second one is for the ordinate .y */
+					    * First cell is for the abscissa .x *
+					    * Second one is for the ordinate .y */
+					    
+	unsigned int currentOrientation ; /* Corresponds to the image of the current launcher */
 }game_t;
 
 /* Structure defining bubbles */
@@ -46,9 +47,6 @@ typedef struct {
 	/* Step of movement */
 	double dx ; 
 	double dy ;
-
-	/* Corresponds to the image of the launcher when we press on space to launch the bubble */
-	unsigned int currentOrientation ;
 
 }bubble_t ;
 
