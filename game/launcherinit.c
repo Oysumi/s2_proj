@@ -2,9 +2,9 @@
 #include "../headers/const.h"
 
 
-bool timereached ( int previous, int current )
+bool timereached ( timecontrol_t * timer )
 {
-	if ( current - previous > 20 )
+	if ( timer->currentTime - timer->previousTime > 20 )
 	{
 		return true ;
 	}
@@ -18,7 +18,7 @@ void launcherPosInit ( SDL_Rect * launcher )
 	launcher->y = SCREEN_HEIGHT - LAUNCHER_HEIGHT ;
 }
 
-void launchermov ( input_t * in, game_t * game, int * previousTime, int * currentTime, bubble_t * bubble )
+void launchermov ( input_t * in, game_t * game, bubble_t * bubble )
 {
   
  if ( in->key[SDLK_LEFT] )
@@ -42,7 +42,5 @@ void launchermov ( input_t * in, game_t * game, int * previousTime, int * curren
      }
    }
  }
- 
- *previousTime = *currentTime ;
  
 }

@@ -123,7 +123,7 @@ void setTransparency ( game_t * game, init_t * window )
 	}
 }
 
-void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window, game_t * game )
+void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window, game_t * game, timecontrol_t * timer )
 {
 	unsigned int i, j ;
 	unsigned int j_max ;
@@ -189,7 +189,25 @@ void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window, game_
 	SDL_BlitSurface ( bub->sprite, &bubRect, window->screen, &(bub->pos) ) ; /* &(bub->position) ? */
 	
 	free ( temp ) ;
+
+	/* We update the time */
+	update_timer ( timer ) ;
 	
+}
+
+void update_timer ( timecontrol_t * timer )
+{
+	timer->previousTime = timer->currentTime ;
+}
+
+void init_timer ( timecontrol_t * timer )
+{
+	timer->previousTime = 0 ;
+}
+
+void get_timer ( timecontrol_t * timer )
+{
+	timer->currentTime = SDL_GetTicks() ;
 }
 
 #endif

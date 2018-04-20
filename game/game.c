@@ -42,65 +42,78 @@ int main ( int argc, char * argv[] )
 	SDL_Rect * launcherPos ;
 
 	bub = ( bubble_t * ) malloc ( sizeof ( bubble_t ) ) ;
+	launcherPos = ( SDL_Rect * ) malloc ( sizeof ( SDL_Rect ) ) ;
 
 	launcherPosInit ( launcherPos ) ;
 	bubPosInit ( bub, game ) ;
 
 	/* *********************** INITIALIZATION OF INPUT VARIABLE ******************** */
 
-	input_t in ;
+	input_t * in ;
+
+	in = ( input_t * ) malloc ( sizeof ( input_t ) ) ;
+
 	memset ( &in, 0, sizeof ( in ) ) ; /* Fill the whole array of zeros */
 
 	/* *********************** INITIALIZATION OF TIME VARIABLE ********************* */
 
 	/* Will regulate the number of image and the speed of the launcher */
-	int previousTime ;
-	int currentTime ;
+	timecontrol_t * time ;
 
-	previousTime = 0 ;
+	time = ( timecontrol_t * ) malloc ( sizeof ( timecontrol_t ) ) ; 
+
+	init_timer ( time ) ;
 
 	/* ************************ BEGINNING OF THE GAME ****************************** */
 
-	while ( !escape ( &in ) )
+	while ( !escape ( in ) )
 	{
 
-		currentTime = SDL_GetTicks () ;
+		/* We launch the timer */
+		get_timer ( time ) ;
 
-		HandleEvent ( &in, bub ) ;
-		updateScreen ( bub, launcherPos, screen, game ) ;
+		/* We wait the "instructions" given by the user */
+		HandleEvent ( in, bub ) ;
 
 		/* We regulate the speed of the launcher thanks to a timer (50FPS) */
-		if ( timereached ( previousTime, currentTime ) )
+		if ( timereached ( time ) )
 		{
-		  launchermov ( &in, game, &previousTime, &currentTime, bub ) ;
+		  launchermov ( in, game, bub ) ;
 		}
 
 		if ( bub->launched )
 		{
-		  bubLaunched ( ... ) ;
+		  bubLaunched ( bub, game ) ;
 		}
 
 		if ( bub->isMoving )
 		{
+
 		  /* We have to check different cases *
-		   * 1: The bubble is not moving anymore : maybe it hits the top or another bubble *
+		   * 1: The bubble is not moving anymore : maybe it hits the top board, or another bubble *
 		   * 2: The bubble is below the limit of the game board : reinitialization of the game *
-		   * 3: The bubble is moving : we calculate the trajectory */
-		  
-		  /* 1st case */
-		  if ( !bubismoving ( ... ) )
+		   * 3: The bubble is moving : we calculate the trajectory and make it move normally */
+
+		  if ( !bubismoving ( bub, game ) ) /* Include the 3rd case */
 		  {
-		    if ( bub_is_below ( ... ) )
+		    if ( bub_is_below ( bub ) ) /* 2nd case */
 		    {
 		      bubarray_free ( game ) ;
 		      gameInit ( game ) ;
 		    }
 		    else
 		    {
-		      /* We place the bubble in the array so that it will be displayed */
+		    	/* 1st case */
+		      	/* We place the bubble in the array so that it will be displayed */
+		    	bub_place ( bub, game ) ;
+
+		    	/* Then we place the new bubble on the launcher */
+		    	bubPosInit ( bub, game ) ;
 		    }
 		  }
-		 }
+		}
+		/* We refresh the screen to draw all the images/sprites */
+		updateScreen ( bub, launcherPos, screen, game, time ) ;
 	}
 
 	bubarray_freecenters ( game ) ;
@@ -108,6 +121,9 @@ int main ( int argc, char * argv[] )
 	free ( bub ) ;
 	free ( game ) ;
 	free ( screen ) ;
+	free ( launcherPos ) ;
+	free ( in ) ;
+	free ( time ) ;
 	SDL_FreeSurface ( screen->launcher ) ;
 	SDL_FreeSurface ( screen->frame ) ;
 }

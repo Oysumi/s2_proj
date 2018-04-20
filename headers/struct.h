@@ -8,14 +8,14 @@ typedef struct {
 	int quit ;
 }input_t;
 
-/* Structure of initialization of the screen */
+/* Structure to initialize the screen */
 typedef struct {
 	SDL_Surface * screen ;
 	SDL_Surface * launcher ;
 	SDL_Surface * frame ;
 }init_t;
 
-/* Structure of access to the positions of bubbles and to their display */
+/* Structure to access to the positions of bubbles */
 typedef struct {
 	SDL_Surface * bub_colors[NUM_COLORS] ; /* Will store the various images of bubbles in different cells */
 	int * * bub_array ; 		   /* Inform about the positions and the colors of bubbles displayed on the game board */
@@ -49,5 +49,13 @@ typedef struct {
 	double dy ;
 
 }bubble_t ;
+
+/* Structure to control the speed of the launcher */
+typedef struct {
+
+	int previousTime ;
+	int currentTime ;
+
+}timecontrol_t ;
 
 #endif
