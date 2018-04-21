@@ -28,7 +28,7 @@ void frameImageInit ( init_t * window )
 	temp = SDL_LoadBMP ( "../img/gamebackground/frame_1p.bmp" ) ;
 	window->frame = SDL_DisplayFormat ( temp ) ;
 
-	free ( temp ) ;
+	SDL_FreeSurface ( temp ) ;
 }
 
 void launcherImageInit ( init_t * window )
@@ -39,11 +39,12 @@ void launcherImageInit ( init_t * window )
 	temp = SDL_LoadBMP ( "../img/launcher/frame_launcher.bmp") ;
 	window->launcher = SDL_DisplayFormat ( temp ) ;
 
-	free ( temp ) ;
+	SDL_FreeSurface ( temp ) ;
 }
 
 void bubImageInit ( game_t * game )
 {
+
 	SDL_Surface * temp ;
 
 	/* Loading the images for the bubble */
@@ -167,7 +168,7 @@ void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window, game_
 	bubRect.w = BUB_SIZE ;
 	bubRect.h = BUB_SIZE ;
 	
-	for ( i = 0 ; i < BUB_NX ; i++ )
+	for ( i = 0 ; i < BUB_NY ; i++ )
 	{
 	  j_max = ( i % 2 == 0 ) ? BUB_NX : BUB_NX - 1 ;
 	  
@@ -191,7 +192,7 @@ void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window, game_
 	free ( temp ) ;
 
 	/* We update the time */
-	update_timer ( timer ) ;
+	get_timer ( timer ) ;
 	
 }
 

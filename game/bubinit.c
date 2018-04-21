@@ -112,15 +112,15 @@ SDL_Rect * calculPosBub ( unsigned int i, unsigned int j, SDL_Rect * bubPos )
 	/* The position depends on the parity of the line. If we are on an even line, then there are 8 bubbles */
 	/* Otherwise, we add a half-bubble to the left board */
 	bubPos->x = ( i % 2 == 0 ) ? BOARD_LEFT + j*dx : BOARD_LEFT + BUB_SIZE / 2 + j*dx ;
-	bubPos->y = BOARD_TOP + 35 * i ; /* 35 =  ( 40 * sqrt(3) ) / 2 */
+	bubPos->y = BOARD_TOP + (35 * i) ; /* 35 =  ( 40 * sqrt(3) ) / 2 */
 
 	return bubPos ;
 }
 
 void bubPosInit ( bubble_t * bubble, game_t * game )
 {
-	bubble->color = rand_color() ;
-	bubble->sprite = game->bub_colors[bubble->color] ;
+	bubble->color = rand_color() + 1 ;
+	bubble->sprite = game->bub_colors[bubble->color - 1] ;
 	bubble->launched = 0 ;
 	bubble->isMoving = 0 ;
 	bubble->launcher_x = BUB_STARTX ;
@@ -139,7 +139,7 @@ unsigned int rand_color ( void )
 	unsigned int rand_number ;
 
 	srand(time(NULL)) ; /* initialization of rand */
-	rand_number = rand() % ( NUM_COLORS - 1 ) ; /* NOTE : current_col doit être compris entre 1 et 8, faire modif plus tard */
+	rand_number = rand() % ( NUM_COLORS ) ; /* NOTE : current_col doit être compris entre 1 et 8, faire modif plus tard */
 	
 	return rand_number ;
 
@@ -153,7 +153,7 @@ bool bubismoving ( bubble_t * bub, game_t * game )
 	double * proj_pos_y = ( double * ) malloc ( sizeof ( double ) ) ;
 
 	* proj_pos_x = bub->x + bub->dx ;
-	* proj_pos_y = bub->y + bub->dy ;
+	* proj_pos_y = bub->y - bub->dy ;
 
 	/* Then we have to check : */
 	/* If there is a collision whith an other bubble */
@@ -238,7 +238,7 @@ bool bub_isColliding ( bubble_t * bub, game_t * game, double * proj_pos_x, doubl
 
 				double collision_dist = BUB_SIZE * 0.87 ; /* 0.87 ~= ( sqrt(3) / 2 ) */
 
-				if ( dist_between_centers < collision_dist )
+				if ( dist_between_centers <= collision_dist )
 				{
 					return true ;
 				}
@@ -256,17 +256,17 @@ bool bub_is_below ( bubble_t * bub )
 
 double bub_getDistance ( double bub1_x, double bub1_y, double bub2_x, double bub2_y )
 {
-	double dx = bub1_x - bub2_x ;
-	double dy = bub1_y - bub2_y ;
+	double dx =  bub1_x - bub2_x ;
+	double dy =  bub1_y - bub2_y  ;
 
-	return sqrt ( abs( dx + dy ) ) ;
+	return sqrt ( pow(dx, 2) + pow(dy, 2) ) ;
 }
 
-void bub_place ( bubble_t * bub, game_t * game )
+int bub_place ( bubble_t * bub, game_t * game )
 {
 	/* The reference for positioning is the center of the bubbles, so we have to add BUB_SIZE / 2 to each coordinate */
-	double x_currBub = bub->x + ( double )( BUB_SIZE / 2 ) ;
-	double y_currBub = bub->y + ( double )( BUB_SIZE / 2 ) ;
+	double x_currBub = bub->x + ( BUB_SIZE / 2 ) ;
+	double y_currBub = bub->y + ( BUB_SIZE / 2 ) ;
 
 	/* Variables used for a loop */
 	unsigned int i, j, j_max ;
@@ -287,46 +287,48 @@ void bub_place ( bubble_t * bub, game_t * game )
 				/* We check if there is a collision between these two bubbles */
 				double dist_between_centers = bub_getDistance ( x_currBub, y_currBub, x_otherBub, y_otherBub ) ;
 
-				if ( dist_between_centers <= BUB_SIZE / 2 )
+				if ( dist_between_centers <= BUB_SIZE / 1.99 )
 				{
 					game->bub_array[i][j] = bub->color ;
+					return 1 ;
 				}
 			}
 		}
 	}
+
+	return 0 ;
 }
 
 void bubLaunched ( bubble_t * bub, game_t * game )
 {
-	/* We check if the bubble is not moving */
 	if ( !bub->isMoving )
 	{
 		/* So first, the bubble is on the launcher */
 		/* We are going to calculate dx and dy according to the angle */
 
 		/* Theta angle is the angle from horizontal *
-		 * Start position : PI/2                    *
-		 * We have 48 launcher images               *
-		 * The sprite is firstly placed on the 22th *
-		 * So we add 2 to have PI/2                 */
+	 	 * Start position : PI/2                    *
+	 	 * We have 48 launcher images               *
+	 	 * The sprite is firstly placed on the 22th *
+	 	 * So we add 2 to have PI/2                 */
 
 		double theta = ( PI * ( game->currentOrientation + 2 ) ) / LAUNCHER_DIV ;
 
 		/* If we represent ourselves the trigonometric circle, we can see that it is inverted *
-		 * (the zero is positioned in reality quite to the left and not to the right).        *
-		 * So, if ( game->currentOrientation > 22 ) then we have a negative dx                *
-		 * and if ( game->currentOrientation <= 22 )then we have a positive dx.               *
-		 * We have to multiply dx by to solve this problem.                                   */
+	 	 * (the zero is positioned in reality quite to the left and not to the right).        *
+	 	 * So, if ( game->currentOrientation > 22 ) then we have a negative dx                *
+	 	 * and if ( game->currentOrientation <= 22 )then we have a positive dx.               *
+	 	 * We have to multiply dx by to solve this problem.                                   */
 
-		bub->dx = -1 * cos ( theta ) * VELOCITY ;
-		bub->dy = sin ( theta ) * VELOCITY ;
+		bub->dx = -1 * cos ( theta ) ;
+		bub->dy = sin ( theta ) ;
 
 		/* Now we change the current state of the bubble : the bubble is moving */
 		bub->isMoving = true ;
+	
+		/* Now the launching is finished */
+		bub->launched = false ;
 	}
-
-	/* Now the launching is finished */
-	bub->launched = false ;
 }
 
 

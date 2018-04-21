@@ -31,7 +31,7 @@ void HandleEvent ( input_t * inkey, bubble_t * bub )
 
 bool escape ( input_t * inkey )
 {
-  if ( inkey->quit || inkey->key[SDLK_SPACE] || inkey->key[SDLK_q] )
+  if ( inkey->quit || inkey->key[SDLK_ESCAPE] || inkey->key[SDLK_q] )
   {
     return true ;
   }

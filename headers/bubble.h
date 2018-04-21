@@ -14,7 +14,7 @@ void bubarray_freecenters ( game_t * game ) ;
 
 SDL_Rect * calculPosBub ( unsigned int i, unsigned int j, SDL_Rect * bubPos ) ;
 
-void launchermov ( input_t * in, game_t * game, bubble_t * bubble ) ;
+void launchermov ( input_t * in, game_t * game, bubble_t * bubble, timecontrol_t * timer ) ;
 
 void bubPosInit ( bubble_t * bubble, game_t * game ) ;
 
@@ -26,7 +26,7 @@ bool bub_is_below ( bubble_t * bub ) ;
 
 double bub_getDistance ( double bub1_x, double bub1_y, double bub2_x, double bub2_y ) ;
 
-void bub_place ( bubble_t * bub, game_t * game ) ;
+int bub_place ( bubble_t * bub, game_t * game ) ;
 
 void bubLaunched ( bubble_t * bub, game_t * game ) ;
 

@@ -18,7 +18,7 @@ void launcherPosInit ( SDL_Rect * launcher )
 	launcher->y = SCREEN_HEIGHT - LAUNCHER_HEIGHT ;
 }
 
-void launchermov ( input_t * in, game_t * game, bubble_t * bubble )
+void launchermov ( input_t * in, game_t * game, bubble_t * bubble, timecontrol_t * timer )
 {
   
  if ( in->key[SDLK_LEFT] )
@@ -28,6 +28,7 @@ void launchermov ( input_t * in, game_t * game, bubble_t * bubble )
      if ( game->currentOrientation > 0 )
      {
        game->currentOrientation -= 1 ;
+       printf("A GAUCHE\n") ;
      }
    }
  }
@@ -39,8 +40,11 @@ void launchermov ( input_t * in, game_t * game, bubble_t * bubble )
      if ( game->currentOrientation < 44 )
      {
        game->currentOrientation += 1 ;
+       printf("A DROITE\n") ;
      }
    }
  }
+
+ update_timer ( timer ) ;
  
 }
