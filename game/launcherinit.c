@@ -28,7 +28,6 @@ void launchermov ( input_t * in, game_t * game, bubble_t * bubble, timecontrol_t
      if ( game->currentOrientation > 0 )
      {
        game->currentOrientation -= 1 ;
-       printf("A GAUCHE\n") ;
      }
    }
  }
@@ -40,7 +39,6 @@ void launchermov ( input_t * in, game_t * game, bubble_t * bubble, timecontrol_t
      if ( game->currentOrientation < 44 )
      {
        game->currentOrientation += 1 ;
-       printf("A DROITE\n") ;
      }
    }
  }

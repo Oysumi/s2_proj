@@ -30,4 +30,12 @@ int bub_place ( bubble_t * bub, game_t * game ) ;
 
 void bubLaunched ( bubble_t * bub, game_t * game ) ;
 
+void initBubblesOnBoard ( game_t * game ) ;
+
+int connex ( game_t * game, bool color ) ;
+
+int fill_the_file ( game_t * game, unsigned int lig, unsigned int row, bool color ) ;
+
+void delete_bub ( game_t * game, bool color ) ;
+
 #endif

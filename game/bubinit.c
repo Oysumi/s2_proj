@@ -136,13 +136,13 @@ void bubPosInit ( bubble_t * bubble, game_t * game )
 unsigned int rand_color ( void )
 {
 
-	unsigned int rand_number ;
+	//unsigned int rand_number ;
 
-	srand(time(NULL)) ; /* initialization of rand */
-	rand_number = rand() % ( NUM_COLORS ) ; /* NOTE : current_col doit être compris entre 1 et 8, faire modif plus tard */
+	//srand(time(NULL)) ; /* initialization of rand */
+	//rand_number = rand() % ( NUM_COLORS ) ; /* NOTE : current_col doit être compris entre 1 et 8, faire modif plus tard */
 	
-	return rand_number ;
-
+	//return rand_number ;
+	return SDL_GetTicks() % NUM_COLORS ;
 }
 
 bool bubismoving ( bubble_t * bub, game_t * game )
@@ -287,9 +287,10 @@ int bub_place ( bubble_t * bub, game_t * game )
 				/* We check if there is a collision between these two bubbles */
 				double dist_between_centers = bub_getDistance ( x_currBub, y_currBub, x_otherBub, y_otherBub ) ;
 
-				if ( dist_between_centers <= BUB_SIZE / 1.99 )
+				if ( dist_between_centers <= BUB_SIZE / 2 )
 				{
 					game->bub_array[i][j] = bub->color ;
+					game->bub_connected_component[i][j] = 1 ;
 					return 1 ;
 				}
 			}
@@ -331,5 +332,273 @@ void bubLaunched ( bubble_t * bub, game_t * game )
 	}
 }
 
+int connex ( game_t * game, bool color )
+{
+
+	unsigned int i, j, j_max ;
+
+	for ( i = 0 ; i < BUB_NY ; i ++ )
+	{
+		j_max = ( i % 2 == 0 ) ? BUB_NX : BUB_NX - 1 ;
+
+		for ( j = 0 ; j < j_max ; j++ )
+		{
+			if ( game->bub_connected_component[i][j] == 1 )
+			{
+				fill_the_file ( game, i, j, color ) ;
+				printf("i : %d, j : %d\n", i, j) ;
+				return 1 ;
+			}
+		}
+	}
+
+	return 0 ;
+}
+
+int fill_the_file ( game_t * game, unsigned int lig, unsigned int row, bool color )
+{
+	unsigned int row_max ;
+	unsigned int i, j ; 
+
+	/* In the first place, we add the coordinates of the first bubble in the file */
+	game->bub_fifo[game->head][0] = lig ;
+	game->bub_fifo[game->head][1] = row ;
+	game->head += 1 ;
+
+	if ( color )
+	{
+		/* We have to test the connectivity with possible 6 neighbors while respecting the color of the initial bubble */
+		while ( game->head != game->tail )
+		{
+			row_max = ( game->bub_fifo[game->tail][0] % 2 ) ? BUB_NX : BUB_NX - 1 ;
+			i = game->bub_fifo[game->tail][0] ;
+			j = game->bub_fifo[game->tail][1] ;
+
+			/* Let us establish a direction of rotation : */
+
+			/* 1 o'clock */
+			if ( i > 0 && j < row_max )
+			{
+				if ( game->bub_array[i][j] == game->bub_array[i-1][j+1] )
+				{
+					game->bub_fifo[game->head][0] = i - 1 ;
+					game->bub_fifo[game->head][1] = j + 1 ;
+					game->bub_connected_component[i-1][j+1] = 1 ;
+					game->head += 1 ;
+				}
+			}
+
+			/* 3 o'clock */
+			if ( j < row_max )
+			{
+				if ( game->bub_array[i][j] == game->bub_array[i][j+1] )
+				{
+					game->bub_fifo[game->head][0] = i ;
+					game->bub_fifo[game->head][1] = j + 1 ;
+					game->bub_connected_component[i][j+1] = 1 ;
+					game->head += 1 ;
+				}
+			}
+
+			/* 5 o'clock */
+			if ( i < (BUB_NY - 1) && j < row_max )
+			{
+				if ( game->bub_array[i][j] == game->bub_array[i+1][j+1] )
+				{
+					game->bub_fifo[game->head][0] = i + 1 ;
+					game->bub_fifo[game->head][1] = j + 1 ;
+					game->bub_connected_component[i+1][j+1] = 1 ;
+					game->head += 1 ;
+				}
+			}
+
+			/* 7 o'clock */
+			if ( i < (BUB_NY - 1) && j > 0 )
+			{
+				if ( game->bub_array[i][j] == game->bub_array[i+1][j] )
+				{
+					game->bub_fifo[game->head][0] = i + 1 ;
+					game->bub_fifo[game->head][1] = j ;
+					game->bub_connected_component[i+1][j] = 1 ;
+					game->head += 1 ;
+				}
+			}
+
+			/* 9 o'clock */
+			if ( j > 0 )
+			{
+				if ( game->bub_array[i][j] == game->bub_array[i][j-1] )
+				{
+					game->bub_fifo[game->head][0] = i ;
+					game->bub_fifo[game->head][1] = j - 1 ;
+					game->bub_connected_component[i][j-1] = 1 ;
+					game->head += 1 ;
+				}
+			}
+
+			/* 11 o'clock */
+			if ( i > 0 )
+			{
+				if ( game->bub_array[i][j] == game->bub_array[i-1][j] )
+				{
+					game->bub_fifo[game->head][0] = i - 1 ;
+					game->bub_fifo[game->head][1] = j ;
+					game->bub_connected_component[i-1][j] = 1 ;
+					game->head += 1 ;
+				}
+			}
+
+			game->tail += 1 ;
+
+		}
+	}
+
+	else
+	{
+		/* We have to test the connectivity with possible 6 neighbors while respecting the color of the initial bubble */
+		while ( game->head != game->tail )
+		{
+
+			row_max = ( game->bub_fifo[game->tail][0] % 2 ) ? BUB_NX : BUB_NX - 1 ;
+			i = game->bub_fifo[game->tail][0] ;
+			j = game->bub_fifo[game->tail][1] ;
+
+			/* Let us establish a direction of rotation : */
+
+			/* 1 o'clock */
+			if ( i > 0 && j < row_max )
+			{
+				if ( game->bub_array[i-1][j+1] > 0 )
+				{
+					game->bub_fifo[game->head][0] = i - 1 ;
+					game->bub_fifo[game->head][1] = j + 1 ;
+					game->bub_connected_component[i-1][j+1] = 1 ;
+					game->head += 1 ;
+				}
+			}
+
+			/* 3 o'clock */
+			if ( j < row_max )
+			{
+				if ( game->bub_array[i][j+1] > 0 )
+				{
+					game->bub_fifo[game->head][0] = i ;
+					game->bub_fifo[game->head][1] = j + 1 ;
+					game->bub_connected_component[i][j+1] = 1 ;
+					game->head += 1 ;
+				}
+			}
+
+			/* 5 o'clock */
+			if ( i < (BUB_NY - 1) && j < row_max )
+			{
+				if ( game->bub_array[i+1][j+1] > 0 )
+				{
+					game->bub_fifo[game->head][0] = i + 1 ;
+					game->bub_fifo[game->head][1] = j + 1 ;
+					game->bub_connected_component[i+1][j+1] = 1 ;
+					game->head += 1 ;
+				}
+			}
+
+			/* 7 o'clock */
+			if ( i < (BUB_NY - 1) && j > 0 )
+			{
+				if ( game->bub_array[i+1][j] > 0 )
+				{
+					game->bub_fifo[game->head][0] = i + 1 ;
+					game->bub_fifo[game->head][1] = j ;
+					game->bub_connected_component[i+1][j] = 1 ;
+					game->head += 1 ;
+				}
+			}
+
+			/* 9 o'clock */
+			if ( j > 0 )
+			{
+				if ( game->bub_array[i][j-1] > 0 )
+				{
+					game->bub_fifo[game->head][0] = i ;
+					game->bub_fifo[game->head][1] = j - 1 ;
+					game->bub_connected_component[i][j-1] = 1 ;
+					game->head += 1 ;
+				}
+			}
+
+			/* 11 o'clock */
+			if ( i > 0 )
+			{
+				if ( game->bub_array[i-1][j] > 0 )
+				{
+					game->bub_fifo[game->head][0] = i - 1 ;
+					game->bub_fifo[game->head][1] = j ;
+					game->bub_connected_component[i-1][j] = 1 ;
+					game->head += 1 ;
+				}
+			}
+
+			game->tail += 1 ;
+			printf("Head : %d, Tail : %d\n", game->head, game->tail);
+
+		}
+	}
+
+	unsigned int j_max ;
+
+	for ( i = 0 ; i < BUB_NY ; i++ )
+	{
+		j_max = ( i % 2 == 0 ) ? BUB_NX : BUB_NX - 1 ;
+
+		for ( j = 0 ; j < j_max ; j++ )
+		{
+			printf("[%d][%d] = %d\n", i, j, game->bub_connected_component[i][j]) ;
+		}
+	}
+
+	game->head = 0 ;
+	game->tail = 0 ;
+
+	return 1 ;
+
+}
+
+void delete_bub ( game_t * game, bool color )
+{
+	unsigned int i, j, j_max ;
+
+	if ( color )
+	{
+		for ( i = 0 ; i < BUB_NY ; i++ )
+		{
+			j_max = ( i % 2 == 0 ) ? BUB_NX : BUB_NX - 1 ;
+
+			for ( j = 0 ; j < j_max ; j++ )
+			{
+				if ( game->bub_connected_component[i][j] == 1 )
+				{
+					game->bub_array[i][j] = 0 ;
+				}
+			}
+		}
+	}
+
+	else
+	{
+		for ( i = 0 ; i < BUB_NY ; i++ )
+		{
+			j_max = ( i % 2 == 0 ) ? BUB_NX : BUB_NX - 1 ;
+
+			for ( j = 0 ; j < j_max ; j++ )
+			{
+				if ( game->bub_connected_component[i][j] == 0 && game->bub_array[i][j] > 0 )
+				{
+					game->bub_array[i][j] = 0 ;
+				}
+			}
+		}
+	}
+
+	bubcomponent_init ( game ) ;
+}
 
 #endif

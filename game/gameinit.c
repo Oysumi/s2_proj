@@ -90,6 +90,14 @@ void gameInit ( game_t * game )
 	game->bub_center = ( int * * * ) malloc ( BUB_NY * sizeof ( int * * ) ) ;
 	bubarray_initcenters ( game ) ;
 
+	/* We first fill the cells of this array with zeros */
+	game->bub_connected_component = ( int * * ) malloc ( BUB_NY * sizeof ( int * ) ) ;
+	bubcomponent_init ( game ) ;
+
+	/* We have to init the file */
+	game->bub_fifo = ( int * * ) malloc ( BUB_NY * BUB_NX * sizeof ( int * ) ) ;
+	bubfile_init ( game ) ;
+
 }
 
 void loadingSprite ( game_t * game, init_t * window )
@@ -210,5 +218,53 @@ void get_timer ( timecontrol_t * timer )
 {
 	timer->currentTime = SDL_GetTicks() ;
 }
+
+void initBubblesOnBoard ( game_t * game )
+{
+	unsigned int i, j, j_max ;
+
+	for ( i = 0 ; i < 3 ; i++ )
+	{
+		j_max = ( i % 2 == 0 ) ? BUB_NX : BUB_NX - 1 ;
+
+		for ( j = 0 ; j < j_max ; j++ )
+		{
+			game->bub_array[i][j] = SDL_GetTicks()*j % 7 + 1 ;
+		}
+	}
+}
+
+void bubcomponent_init ( game_t * game )
+{
+	unsigned int i, j, j_max ;
+
+	for ( i = 0 ; i < BUB_NY ; i++ )
+	{
+
+		game->bub_connected_component[i] = ( int * ) malloc ( BUB_NX * sizeof ( int ) ) ;
+		j_max = ( i % 2 == 0 ) ? BUB_NX : BUB_NX - 1 ;
+
+		for ( j = 0 ; j < j_max ; j++ )
+		{
+			game->bub_connected_component[i][j] = 0 ;
+		}
+	}
+}
+
+
+void bubfile_init ( game_t * game )
+{
+	unsigned int i ;
+
+	for ( i = 0 ; i < BUB_NY * BUB_NX ; i++ )
+	{
+		game->bub_fifo[i] = ( int * ) malloc ( 2 * sizeof ( int ) ) ;
+	}
+
+	game->head = 0 ;
+	game->tail = 0 ;
+}
+
+/* NOTE : FAIRE DES FREE POUR CES DEUX FONCTIONS POUR EVITER FUITE MEMOIRE */
 
 #endif

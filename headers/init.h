@@ -29,4 +29,9 @@ void get_timer ( timecontrol_t * timer ) ;
 
 unsigned int rand_color ( void ) ;
 
+void bubcomponent_init ( game_t * game ) ;
+
+void bubfile_init ( game_t * game ) ;
+
+
 #endif

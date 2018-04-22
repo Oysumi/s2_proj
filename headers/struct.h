@@ -18,12 +18,20 @@ typedef struct {
 /* Structure to access to the positions of bubbles */
 typedef struct {
 	SDL_Surface * bub_colors[NUM_COLORS] ; /* Will store the various images of bubbles in different cells */
-	int * * bub_array ; 		   /* Inform about the positions and the colors of bubbles displayed on the game board */
-	int * * * bub_center ;		   /* Will store the coordinates of the center of bubbles
-					    * First cell is for the abscissa .x *
-					    * Second one is for the ordinate .y */
+
+	int * * bub_array ; 		   		   /* Inform about the positions and the colors of bubbles displayed on the game board */
+
+	int * * * bub_center ;		   		   /* Will store the coordinates of the center of bubbles
+					    					* First cell is for the abscissa .x *
+					    					* Second one is for the ordinate .y */
+
+	int * * bub_connected_component	;	   /* Will allow to determine which bubbles it will be necessary to remove from the board */
+
+	int * * bub_fifo ;					   /* Represent in reality a file which will help in the connectivity of bubbles */
+	int head ;
+	int tail ;
 					    
-	unsigned int currentOrientation ; /* Corresponds to the image of the current launcher */
+	unsigned int currentOrientation ; 	   /* Corresponds to the image of the current launcher */
 }game_t;
 
 /* Structure defining bubbles */

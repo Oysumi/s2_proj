@@ -8,9 +8,6 @@
 int main ( int argc, char * argv[] )
 {
 
-	/* Nb : INITIALISER QUE DES POINTEURS POUR QUE LE CODE SOIT HOMOGENE */
-	/* FAIRE STRUCTURE TIME POUR SE SIMPLIFIER LA VIE */
-	
 	/* ************************ INITIALIZATION OF THE SCREEN ************************ */
 
 	/* Declaration of the variables */
@@ -33,9 +30,6 @@ int main ( int argc, char * argv[] )
 
 	/* ************************* INITIALIZATION OF THE SPRITES ********************** */
 
-	/* We load sprites in the game */
-	//loadingSprite ( game, screen ) ;
-
 	/* We add the transparency so that the image are displayed without purple outline */
 	setTransparency ( game, screen ) ;
 
@@ -53,22 +47,24 @@ int main ( int argc, char * argv[] )
 
 	/* *********************** INITIALIZATION OF INPUT VARIABLE ******************** */
 
-	input_t * in ;
+	input_t * in ; 
 
 	in = ( input_t * ) malloc ( sizeof ( input_t ) ) ;
 
 	memset ( in, 0, sizeof ( * in ) ) ; /* Fill the whole array of zeros */
-
+ 
 	/* *********************** INITIALIZATION OF TIME VARIABLE ********************* */
-
+ 
 	/* Will regulate the number of image and the speed of the launcher */
-	timecontrol_t * time ;
+	timecontrol_t * time ; 
 
 	time = ( timecontrol_t * ) malloc ( sizeof ( timecontrol_t ) ) ; 
-
-	init_timer ( time ) ;
-
+ 
+	init_timer ( time ) ;  
+ 
 	/* ************************ BEGINNING OF THE GAME ****************************** */
+
+	initBubblesOnBoard ( game ) ;
 
 	while ( !escape ( in ) )
 	{
@@ -105,23 +101,29 @@ int main ( int argc, char * argv[] )
 		  {
 		    if ( bub_is_below ( bub ) ) /* 2nd case */
 		    { 
+		      printf("GAME OVER.\n") ;
 		      bubarray_free ( game ) ; 
 		      gameInit ( game ) ; 
-		      bubPosInit ( bub, game ) ; 
-		    } 
+		      bubPosInit ( bub, game ) ;
+		      initBubblesOnBoard ( game ) ;
+		    }      
 		    else 
 		    {
 		    	/* 1st case */
 		      	/* We place the bubble in the array so that it will be displayed */
-		    	bub_place ( bub, game ) ;
-
+		    	connex ( game, true ) ;
+		    	delete_bub( game, true ) ; 
+		    	connex ( game, false ) ;
+		    	delete_bub ( game, false ) ;
+		    	bub_place ( bub, game ) ; 
+  
 		    	/* Then we place the new bubble on the launcher */
 		    	bubPosInit ( bub, game ) ;
 		    }
-		  }
-		}
-
-		SDL_UpdateRect ( screen->screen, 0, 0, 0, 0 ) ;
+		  }     
+		}        
+ 
+		SDL_UpdateRect ( screen->screen, 0, 0, 0, 0 ) ; 
 
 	}
 
@@ -136,4 +138,5 @@ int main ( int argc, char * argv[] )
 	SDL_FreeSurface ( screen->frame ) ;
 	SDL_FreeSurface ( screen->screen ) ;
 	free ( screen ) ;
+	/* NOTE : IL MANQUE DEUX FONCTIONS POUR FREE */
 }
