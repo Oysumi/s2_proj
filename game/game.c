@@ -43,7 +43,7 @@ int main ( int argc, char * argv[] )
 	launcherPos = ( SDL_Rect * ) malloc ( sizeof ( SDL_Rect ) ) ;
 
 	launcherPosInit ( launcherPos ) ;
-	bubPosInit ( bub, game ) ;
+	bubPosInit ( bub, game ) ;                                   
 
 	/* *********************** INITIALIZATION OF INPUT VARIABLE ******************** */
 
@@ -78,6 +78,17 @@ int main ( int argc, char * argv[] )
 		/* We wait the "instructions" given by the user */
 		HandleEvent ( in, bub ) ;
       
+      	/* We check if the player won */
+      	if ( we_have_a_winner ( game ) )
+      	{
+      		printf("CONGRATULATIONS ! YOU WIN !\n") ;
+      		bubarray_free ( game ) ; 
+		    gameInit ( game ) ; 
+		    bubPosInit ( bub, game ) ;   
+		    initBubblesOnBoard ( game ) ;
+		    bubcomponent_init ( game ) ;    
+      	} 
+
 		/* We regulate the speed of the launcher thanks to a timer (50FPS) */
 		if ( timereached ( time ) ) 
 		{ 
@@ -91,8 +102,8 @@ int main ( int argc, char * argv[] )
   
 		if ( bub->isMoving )
 		{  
-
-		  /* We have to check different cases *  
+ 
+		  /* We have to check differen t cases *  
 		   * 1: The bubble is not moving anymore : maybe it hits the top board, or another bubble *
 		   * 2: The bubble is below the limit of the game board : reinitialization of the game *
 		   * 3: The bubble is moving : we calculate the trajectory and make it move normally */
@@ -106,22 +117,22 @@ int main ( int argc, char * argv[] )
 		      gameInit ( game ) ; 
 		      bubPosInit ( bub, game ) ;   
 		      initBubblesOnBoard ( game ) ;
-		      bubcomponent_init ( game ) ;
-       
+		      bubcomponent_init ( game ) ;      
+        
 		    }      
 		    else 
-		    {    
+		    {     
 		    	/* 1st case */
 		      	/* We place the bubble in the array so that it will be displayed */
-		      	bub_place ( bub, game ) ;         
-		    	connex ( game, true ) ;
-		    	//connex ( game, false ) ;              
-  
+		      	bub_place ( bub, game ) ; 
+		      	connex ( game, true ) ; /* 1st step : with colors */
+				connex ( game, false ) ; /* 2nd step : without colors */                    
+           
 		    	/* Then we place the new bubble on the launcher */
-		    	bubPosInit ( bub, game ) ;
-		    }
+		    	bubPosInit ( bub, game ) ;  
+		    }  
 		  }     
-		}         
+		}          
 
 		SDL_UpdateRect ( screen->screen, 0, 0, 0, 0 ) ; 
 

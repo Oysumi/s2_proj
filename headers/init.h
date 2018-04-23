@@ -35,5 +35,6 @@ void bubfile_init ( game_t * game ) ;
 
 void freecomponent_array ( game_t * game ) ;
 
+bool we_have_a_winner ( game_t * game ) ;
 
 #endif

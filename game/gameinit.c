@@ -280,6 +280,24 @@ void freecomponent_array ( game_t * game )
 
 }
 
+bool we_have_a_winner ( game_t * game )
+{
+	unsigned int i, j, j_max ;
+
+	for ( i = 0 ; i < BUB_NY ; i ++ )
+	{
+		j_max = ( i % 2 == 0 ) ? BUB_NX : BUB_NX - 1 ;
+
+		for ( j = 0 ; j < j_max ; j++ )
+		{
+			if ( game->bub_array[i][j] > 0 )
+			{
+				return false ;
+			}
+		}
+	}
+	return true ;
+}
 /* NOTE : FAIRE DES FREE POUR CES DEUX FONCTIONS POUR EVITER FUITE MEMOIRE */
 
 #endif

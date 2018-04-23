@@ -289,9 +289,8 @@ int bub_place ( bubble_t * bub, game_t * game )
 
 				if ( dist_between_centers <= BUB_SIZE / 1.99 )
 				{
-					game->bub_array[i][j] = bub->color ;
 					game->bub_connected_component[i][j] = 1 ;
-					printf("BUB PLACED IN [%d][%d]\nVERIFICATION : game->bub_connected[%d][%d] = [%d]\n", i, j, i, j, game->bub_connected_component[i][j]) ;
+					game->bub_array[i][j] = bub->color ;
 					return 1 ;
 				}
 			}
@@ -338,7 +337,7 @@ int connex ( game_t * game, bool color )
 
 	unsigned int i, j, j_max ;
 
-	if ( color == 1 )
+	if ( color )
 	{
 		for ( i = 0 ; i < BUB_NY ; i ++ )
 		{
@@ -358,7 +357,7 @@ int connex ( game_t * game, bool color )
 
 	else
 	{
-		for ( j = 0 ; j < BUB_NX ; j ++ )
+		for ( j = 0 ; j < BUB_NX ; j++ )
 		{
 			fill_the_file ( game, 0, j, color ) ;
 		}
@@ -384,81 +383,158 @@ int fill_the_file ( game_t * game, unsigned int row, unsigned int col, bool colo
 		/* We have to test the connectivity with possible 6 neighbors while respecting the color of the initial bubble */
 		while ( game->head != game->tail )
 		{
-			col_max = ( game->bub_fifo[game->tail][0] % 2 ) ? BUB_NX : BUB_NX - 1 ;
+			col_max = ( game->bub_fifo[game->tail][0] % 2 == 0 ) ? BUB_NX : BUB_NX - 1 ;
 			i = game->bub_fifo[game->tail][0] ;
 			j = game->bub_fifo[game->tail][1] ;
 
 			/* Let us establish a direction of rotation : */
 
-			/* 1 o'clock */
-			if ( i > 0 && j < col_max )
+			if ( col_max == BUB_NX - 1 ) /* od line */
 			{
-				if ( game->bub_array[i][j] == game->bub_array[i-1][j+1] && game->bub_array[i][j] < 10 )
+				/* 11 o'clock */
+				if ( i > 0 )
 				{
-					game->bub_fifo[game->head][0] = i - 1 ;
-					game->bub_fifo[game->head][1] = j + 1 ;
-					game->bub_connected_component[i-1][j+1] = 1 ;
-					game->head += 1 ;
+					if ( game->bub_array[i][j] == game->bub_array[i-1][j] && game->bub_array[i-1][j] < 10 && game->bub_array[i-1][j] > 0 )
+					{	
+						game->bub_fifo[game->head][0] = i - 1 ;
+						game->bub_fifo[game->head][1] = j ;
+						game->bub_connected_component[i-1][j] = 1 ;
+						game->head += 1 ;
+					}
+				}
+
+				/* 1 o'clock */
+				if ( i > 0 && j < col_max )
+				{
+					if ( game->bub_array[i][j] == game->bub_array[i-1][j+1] && game->bub_array[i-1][j+1] < 10 && game->bub_array[i-1][j+1] > 0 )
+					{
+						game->bub_fifo[game->head][0] = i - 1 ;
+						game->bub_fifo[game->head][1] = j + 1 ;
+						game->bub_connected_component[i-1][j+1] = 1 ;
+						game->head += 1 ;
+					}
+				}
+
+				/* 3 o'clock */
+				if ( j < col_max )
+				{
+					if ( game->bub_array[i][j] == game->bub_array[i][j+1] && game->bub_array[i][j+1] < 10 && game->bub_array[i][j+1] > 0 )
+					{
+						game->bub_fifo[game->head][0] = i ;
+						game->bub_fifo[game->head][1] = j + 1 ;
+						game->bub_connected_component[i][j+1] = 1 ;
+						game->head += 1 ;
+					}
+				}
+
+				/* 5 o'clock */
+				if ( i < (BUB_NY - 1) && j < col_max )
+				{
+					if ( game->bub_array[i][j] == game->bub_array[i+1][j+1] && game->bub_array[i+1][j+1] < 10 && game->bub_array[i+1][j+1] > 0 )
+					{
+						game->bub_fifo[game->head][0] = i + 1 ;
+						game->bub_fifo[game->head][1] = j + 1 ;
+						game->bub_connected_component[i+1][j+1] = 1 ;
+						game->head += 1 ;
+					}
+				}
+
+				/* 7 o'clock */
+				if ( i < (BUB_NY - 1) )
+				{
+					if ( game->bub_array[i][j] == game->bub_array[i+1][j] && game->bub_array[i+1][j] < 10 && game->bub_array[i+1][j] > 0 )
+					{
+						game->bub_fifo[game->head][0] = i + 1 ;
+						game->bub_fifo[game->head][1] = j ;
+						game->bub_connected_component[i+1][j] = 1 ;
+						game->head += 1 ;
+					}
+				}
+
+				/* 9 o'clock */
+				if ( j > 0 )
+				{
+					if ( game->bub_array[i][j] == game->bub_array[i][j-1] && game->bub_array[i][j-1] < 10 && game->bub_array[i][j-1] > 0 )
+					{
+						game->bub_fifo[game->head][0] = i ;
+						game->bub_fifo[game->head][1] = j - 1 ;
+						game->bub_connected_component[i][j-1] = 1 ;
+						game->head += 1 ;
+					}
 				}
 			}
 
-			/* 3 o'clock */
-			if ( j < col_max )
+			else if ( col_max == BUB_NX ) /* even line */
 			{
-				if ( game->bub_array[i][j] == game->bub_array[i][j+1] && game->bub_array[i][j] < 10 )
+				if ( i > 0 && j > 0 )
 				{
-					game->bub_fifo[game->head][0] = i ;
-					game->bub_fifo[game->head][1] = j + 1 ;
-					game->bub_connected_component[i][j+1] = 1 ;
-					game->head += 1 ;
+					if ( game->bub_array[i][j] == game->bub_array[i-1][j-1] && game->bub_array[i-1][j-1] < 10 && game->bub_array[i-1][j-1] > 0 )
+					{	
+						game->bub_fifo[game->head][0] = i - 1 ;
+						game->bub_fifo[game->head][1] = j - 1;
+						game->bub_connected_component[i-1][j-1] = 1 ;
+						game->head += 1 ;
+					}
 				}
-			}
 
-			/* 5 o'clock */
-			if ( i < (BUB_NY - 1) && j < col_max )
-			{
-				if ( game->bub_array[i][j] == game->bub_array[i+1][j+1] && game->bub_array[i][j] < 10 )
+				/* 1 o'clock */
+				if ( i > 0 )
 				{
-					game->bub_fifo[game->head][0] = i + 1 ;
-					game->bub_fifo[game->head][1] = j + 1 ;
-					game->bub_connected_component[i+1][j+1] = 1 ;
-					game->head += 1 ;
+					if ( game->bub_array[i][j] == game->bub_array[i-1][j] && game->bub_array[i-1][j] < 10 && game->bub_array[i-1][j] > 0 )
+					{
+						game->bub_fifo[game->head][0] = i - 1 ;
+						game->bub_fifo[game->head][1] = j ;
+						game->bub_connected_component[i-1][j] = 1 ;
+						game->head += 1 ;
+					}
 				}
-			}
 
-			/* 7 o'clock */
-			if ( i < (BUB_NY - 1) )
-			{
-				if ( game->bub_array[i][j] == game->bub_array[i+1][j] && game->bub_array[i][j] < 10 )
+				/* 3 o'clock */
+				if ( j < col_max )
 				{
-					game->bub_fifo[game->head][0] = i + 1 ;
-					game->bub_fifo[game->head][1] = j ;
-					game->bub_connected_component[i+1][j] = 1 ;
-					game->head += 1 ;
+					if ( game->bub_array[i][j] == game->bub_array[i][j+1] && game->bub_array[i][j+1] < 10 && game->bub_array[i][j+1] > 0 )
+					{
+						game->bub_fifo[game->head][0] = i ;
+						game->bub_fifo[game->head][1] = j + 1 ;
+						game->bub_connected_component[i][j+1] = 1 ;
+						game->head += 1 ;
+					}
 				}
-			}
 
-			/* 9 o'clock */
-			if ( j > 0 )
-			{
-				if ( game->bub_array[i][j] == game->bub_array[i][j-1] && game->bub_array[i][j] < 10 )
+				/* 5 o'clock */
+				if ( i < (BUB_NY - 1) )
 				{
-					game->bub_fifo[game->head][0] = i ;
-					game->bub_fifo[game->head][1] = j - 1 ;
-					game->bub_connected_component[i][j-1] = 1 ;
-					game->head += 1 ;
+					if ( game->bub_array[i][j] == game->bub_array[i+1][j] && game->bub_array[i+1][j] < 10 && game->bub_array[i+1][j] > 0 )
+					{
+						game->bub_fifo[game->head][0] = i + 1 ;
+						game->bub_fifo[game->head][1] = j ;
+						game->bub_connected_component[i+1][j] = 1 ;
+						game->head += 1 ;
+					}
 				}
-			}
 
-			/* 11 o'clock */
-			if ( i > 0 )
-			{
-				if ( game->bub_array[i][j] == game->bub_array[i-1][j] && game->bub_array[i][j] < 10 )
+				/* 7 o'clock */
+				if ( i < (BUB_NY - 1) && j > 0 )
 				{
-					game->bub_fifo[game->head][0] = i - 1 ;
-					game->bub_fifo[game->head][1] = j ;
-					game->bub_connected_component[i-1][j] = 1 ;
-					game->head += 1 ;
+					if ( game->bub_array[i][j] == game->bub_array[i+1][j-1] && game->bub_array[i+1][j-1] < 10 && game->bub_array[i+1][j-1] > 0 )
+					{
+						game->bub_fifo[game->head][0] = i + 1 ;
+						game->bub_fifo[game->head][1] = j - 1 ;
+						game->bub_connected_component[i+1][j-1] = 1 ;
+						game->head += 1 ;
+					}
+				}
+
+				/* 9 o'clock */
+				if ( j > 0 )
+				{
+					if ( game->bub_array[i][j] == game->bub_array[i][j-1] && game->bub_array[i][j-1] < 10 && game->bub_array[i][j-1] > 0 )
+					{
+						game->bub_fifo[game->head][0] = i ;
+						game->bub_fifo[game->head][1] = j - 1 ;
+						game->bub_connected_component[i][j-1] = 1 ;
+						game->head += 1 ;
+					}
 				}
 			}
 
@@ -468,8 +544,6 @@ int fill_the_file ( game_t * game, unsigned int row, unsigned int col, bool colo
 			}
 
 			game->tail += 1 ;
-			printf("game->head, game->tail : [%d][%d]\n", game->head, game->tail);
-			printf("[%d][%d]\n", i, j) ;
 
 		}
 	}
@@ -479,88 +553,171 @@ int fill_the_file ( game_t * game, unsigned int row, unsigned int col, bool colo
 		/* We have to test the connectivity with possible 6 neighbors while respecting the color of the initial bubble */
 		while ( game->head != game->tail )
 		{
-
-			col_max = ( game->bub_fifo[game->tail][0] % 2 ) ? BUB_NX : BUB_NX - 1 ;
+			col_max = ( game->bub_fifo[game->tail][0] % 2 == 0 ) ? BUB_NX : BUB_NX - 1 ;
 			i = game->bub_fifo[game->tail][0] ;
 			j = game->bub_fifo[game->tail][1] ;
+			game->bub_connected_component[i][j] =  1 ;
 
 			/* Let us establish a direction of rotation : */
 
-			/* 1 o'clock */
-			if ( i > 0 && j < col_max )
+			if ( col_max == BUB_NX - 1 ) /* od line */
 			{
-				if ( game->bub_array[i-1][j+1] > 0 && game->bub_array[i-1][j+1] < 10 )
+				/* 11 o'clock */
+				if ( i > 0 )
 				{
-					game->bub_fifo[game->head][0] = i - 1 ;
-					game->bub_fifo[game->head][1] = j + 1 ;
-					game->bub_connected_component[i-1][j+1] = 1 ;
-					game->head += 1 ;
-					game->bub_array[i-1][j+1] += 10 ;
+					if ( game->bub_array[i][j] > 0 && game->bub_array[i-1][j] < 10 && game->bub_array[i-1][j] > 0 )
+					{	
+						game->bub_fifo[game->head][0] = i - 1 ;
+						game->bub_fifo[game->head][1] = j ;
+						game->bub_connected_component[i-1][j] = 1 ;
+						game->bub_array[i-1][j] += 10 ;
+						game->head += 1 ;
+					}
+				}
+
+				/* 1 o'clock */
+				if ( i > 0 && j < col_max )
+				{
+					if ( game->bub_array[i][j] > 0 && game->bub_array[i-1][j+1] < 10 && game->bub_array[i-1][j+1] > 0 )
+					{
+						game->bub_fifo[game->head][0] = i - 1 ;
+						game->bub_fifo[game->head][1] = j + 1 ;
+						game->bub_connected_component[i-1][j+1] = 1 ;
+						game->bub_array[i-1][j+1] += 10 ;
+						game->head += 1 ;
+					}
+				}
+
+				/* 3 o'clock */
+				if ( j < col_max )
+				{
+					if ( game->bub_array[i][j] > 0 && game->bub_array[i][j+1] < 10 && game->bub_array[i][j+1] > 0 )
+					{
+						game->bub_fifo[game->head][0] = i ;
+						game->bub_fifo[game->head][1] = j + 1 ;
+						game->bub_connected_component[i][j+1] = 1 ;
+						game->bub_array[i][j+1] += 10 ;
+						game->head += 1 ;
+					}
+				}
+
+				/* 5 o'clock */
+				if ( i < (BUB_NY - 1) && j < col_max )
+				{
+					if ( game->bub_array[i][j] > 0 && game->bub_array[i+1][j+1] < 10 && game->bub_array[i+1][j+1] > 0 )
+					{
+						game->bub_fifo[game->head][0] = i + 1 ;
+						game->bub_fifo[game->head][1] = j + 1 ;
+						game->bub_connected_component[i+1][j+1] = 1 ;
+						game->bub_array[i+1][j+1] += 10 ;
+						game->head += 1 ;
+					}
+				}
+
+				/* 7 o'clock */
+				if ( i < (BUB_NY - 1) )
+				{
+					if ( game->bub_array[i][j] > 0 && game->bub_array[i+1][j] < 10 && game->bub_array[i+1][j] > 0 )
+					{
+						game->bub_fifo[game->head][0] = i + 1 ;
+						game->bub_fifo[game->head][1] = j ;
+						game->bub_connected_component[i+1][j] = 1 ;
+						game->bub_array[i+1][j] += 10 ;
+						game->head += 1 ;
+					}
+				}
+
+				/* 9 o'clock */
+				if ( j > 0 )
+				{
+					if ( game->bub_array[i][j] > 0 && game->bub_array[i][j-1] < 10 && game->bub_array[i][j-1] > 0 )
+					{
+						game->bub_fifo[game->head][0] = i ;
+						game->bub_fifo[game->head][1] = j - 1 ;
+						game->bub_connected_component[i][j-1] = 1 ;
+						game->bub_array[i][j-1] += 10 ;
+						game->head += 1 ;
+					}
 				}
 			}
 
-			/* 3 o'clock */
-			if ( j < col_max )
+			else if ( col_max == BUB_NX ) /* even line */
 			{
-				if ( game->bub_array[i][j+1] > 0 && game->bub_array[i][j+1] < 10 )
+				if ( i > 0 && j > 0 )
 				{
-					game->bub_fifo[game->head][0] = i ;
-					game->bub_fifo[game->head][1] = j + 1 ;
-					game->bub_connected_component[i][j+1] = 1 ;
-					game->head += 1 ;
-					game->bub_array[i][j+1] += 10 ;
+					if ( game->bub_array[i][j] > 0 && game->bub_array[i-1][j-1] < 10 && game->bub_array[i-1][j-1] > 0 )
+					{	
+						game->bub_fifo[game->head][0] = i - 1 ;
+						game->bub_fifo[game->head][1] = j - 1;
+						game->bub_connected_component[i-1][j-1] = 1 ;
+						game->bub_array[i-1][j-1] += 10 ;
+						game->head += 1 ;
+					}
 				}
-			}
 
-			/* 5 o'clock */
-			if ( i < (BUB_NY - 1) && j < col_max )
-			{
-				if ( game->bub_array[i+1][j+1] > 0 && game->bub_array[i+1][j+1] < 10 )
+				/* 1 o'clock */
+				if ( i > 0 )
 				{
-					game->bub_fifo[game->head][0] = i + 1 ;
-					game->bub_fifo[game->head][1] = j + 1 ;
-					game->bub_connected_component[i+1][j+1] = 1 ;
-					game->head += 1 ;
-					game->bub_array[i+1][j+1] += 10 ;
+					if ( game->bub_array[i][j] > 0 && game->bub_array[i-1][j] < 10 && game->bub_array[i-1][j] > 0 )
+					{
+						game->bub_fifo[game->head][0] = i - 1 ;
+						game->bub_fifo[game->head][1] = j ;
+						game->bub_connected_component[i-1][j] = 1 ;
+						game->bub_array[i-1][j] += 10 ;
+						game->head += 1 ;
+					}
 				}
-			}
 
-			/* 7 o'clock */
-			if ( i < (BUB_NY - 1) && j > 0 )
-			{
-				if ( game->bub_array[i+1][j] > 0 && game->bub_array[i+1][j] < 10 )
+				/* 3 o'clock */
+				if ( j < col_max )
 				{
-					game->bub_fifo[game->head][0] = i + 1 ;
-					game->bub_fifo[game->head][1] = j ;
-					game->bub_connected_component[i+1][j] = 1 ;
-					game->head += 1 ;
-					game->bub_array[i+1][j] += 10 ;
+					if ( game->bub_array[i][j] > 0 && game->bub_array[i][j+1] < 10 && game->bub_array[i][j+1] > 0 )
+					{
+						game->bub_fifo[game->head][0] = i ;
+						game->bub_fifo[game->head][1] = j + 1 ;
+						game->bub_connected_component[i][j+1] = 1 ;
+						game->bub_array[i][j+1] += 10 ;
+						game->head += 1 ;
+					}
 				}
-			}
 
-			/* 9 o'clock */
-			if ( j > 0 )
-			{
-				if ( game->bub_array[i][j-1] > 0 && game->bub_array[i][j-1] < 10 )
+				/* 5 o'clock */
+				if ( i < (BUB_NY - 1) )
 				{
-					game->bub_fifo[game->head][0] = i ;
-					game->bub_fifo[game->head][1] = j - 1 ;
-					game->bub_connected_component[i][j-1] = 1 ;
-					game->head += 1 ;
-					game->bub_array[i][j-1] += 10 ;
+					if ( game->bub_array[i][j] > 0 && game->bub_array[i+1][j] < 10 && game->bub_array[i+1][j] > 0 )
+					{
+						game->bub_fifo[game->head][0] = i + 1 ;
+						game->bub_fifo[game->head][1] = j ;
+						game->bub_connected_component[i+1][j] = 1 ;
+						game->bub_array[i+1][j] += 10 ;
+						game->head += 1 ;
+					}
 				}
-			}
 
-			/* 11 o'clock */
-			if ( i > 0 )
-			{
-				if ( game->bub_array[i-1][j] > 0 && game->bub_array[i-1][j] < 10 )
+				/* 7 o'clock */
+				if ( i < (BUB_NY - 1) && j > 0 )
 				{
-					game->bub_fifo[game->head][0] = i - 1 ;
-					game->bub_fifo[game->head][1] = j ;
-					game->bub_connected_component[i-1][j] = 1 ;
-					game->head += 1 ;
-					game->bub_array[i-1][j] += 10 ;
+					if ( game->bub_array[i][j] > 0 && game->bub_array[i+1][j-1] < 10 && game->bub_array[i+1][j-1] > 0 )
+					{
+						game->bub_fifo[game->head][0] = i + 1 ;
+						game->bub_fifo[game->head][1] = j - 1 ;
+						game->bub_connected_component[i+1][j-1] = 1 ;
+						game->bub_array[i+1][j-1] += 10 ;
+						game->head += 1 ;
+					}
+				}
+
+				/* 9 o'clock */
+				if ( j > 0 )
+				{
+					if ( game->bub_array[i][j] > 0 && game->bub_array[i][j-1] < 10 && game->bub_array[i][j-1] > 0 )
+					{
+						game->bub_fifo[game->head][0] = i ;
+						game->bub_fifo[game->head][1] = j - 1 ;
+						game->bub_connected_component[i][j-1] = 1 ;
+						game->bub_array[i][j-1] += 10 ;
+						game->head += 1 ;
+					}
 				}
 			}
 
@@ -568,20 +725,6 @@ int fill_the_file ( game_t * game, unsigned int row, unsigned int col, bool colo
 
 		}
 	}
-
-	/*unsigned int j_max ;
-
-	for ( i = 0 ; i < BUB_NY ; i++ )
-	{
-		j_max = ( i % 2 == 0 ) ? BUB_NX : BUB_NX - 1 ;
-
-		for ( j = 0 ; j < j_max ; j++ )
-		{
-			printf("[%d][%d] = %d\n", i, j, game->bub_connected_component[i][j]) ;
-		}
-	}
-
-	*/
 
 	game->head = 0 ;
 	game->tail = 0 ;
@@ -604,12 +747,14 @@ void delete_bub ( game_t * game, bool color )
 
 			for ( j = 0 ; j < j_max ; j++ )
 			{
-				if ( game->bub_connected_component[i][j] == 1 )
+				if ( game->bub_array[i][j] > 10 )
 				{
 					game->bub_array[i][j] -= 10 ;
-					printf("game->bub_array[i][j] = %d\n", game->bub_array[i][j]) ;
+				}
+
+				if ( game->bub_connected_component[i][j] == 1 )
+				{
 					max += 1 ;
-					printf("max : %d\n", max);
 				}
 			}
 		}
@@ -653,7 +798,7 @@ void delete_bub ( game_t * game, bool color )
 		}
 	}
 
-	//freecomponent_array ( game ) ;
+	freecomponent_array ( game ) ;
 	bubcomponent_init ( game ) ;
 
 }
