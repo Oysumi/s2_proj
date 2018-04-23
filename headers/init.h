@@ -33,5 +33,7 @@ void bubcomponent_init ( game_t * game ) ;
 
 void bubfile_init ( game_t * game ) ;
 
+void freecomponent_array ( game_t * game ) ;
+
 
 #endif

@@ -17,7 +17,7 @@ int main ( int argc, char * argv[] )
 	screenInit ( screen ) ;
 
 	frameImageInit ( screen ) ;
-	launcherImageInit ( screen ) ;
+	launcherImageInit ( screen ) ;   
 
 	/* ************************* INITIALIZATION OF THE GAME ************************* */
      
@@ -26,7 +26,7 @@ int main ( int argc, char * argv[] )
 	game = ( game_t * ) malloc ( sizeof ( game_t ) ) ;
   
 	gameInit ( game ) ; /* Including bubarray_init */
-	bubImageInit ( game ) ;
+	bubImageInit ( game ) ; 
 
 	/* ************************* INITIALIZATION OF THE SPRITES ********************** */
 
@@ -71,18 +71,18 @@ int main ( int argc, char * argv[] )
 		 
 		/* We refresh the screen to draw all the images/sprites */  
 		updateScreen ( bub, launcherPos, screen, game, time ) ;
-
+       
 		/* We launch the timer */
-		get_timer ( time ) ;
+		get_timer ( time ) ; 
 
 		/* We wait the "instructions" given by the user */
 		HandleEvent ( in, bub ) ;
       
 		/* We regulate the speed of the launcher thanks to a timer (50FPS) */
-		if ( timereached ( time ) )
+		if ( timereached ( time ) ) 
 		{ 
 		  launchermov ( in, game, bub, time ) ;
-		}
+		} 
 
 		if ( bub->launched ) 
 		{
@@ -104,30 +104,30 @@ int main ( int argc, char * argv[] )
 		      printf("GAME OVER.\n") ;
 		      bubarray_free ( game ) ; 
 		      gameInit ( game ) ; 
-		      bubPosInit ( bub, game ) ;
+		      bubPosInit ( bub, game ) ;   
 		      initBubblesOnBoard ( game ) ;
+		      bubcomponent_init ( game ) ;
+       
 		    }      
 		    else 
-		    {
+		    {    
 		    	/* 1st case */
 		      	/* We place the bubble in the array so that it will be displayed */
+		      	bub_place ( bub, game ) ;         
 		    	connex ( game, true ) ;
-		    	delete_bub( game, true ) ; 
-		    	connex ( game, false ) ;
-		    	delete_bub ( game, false ) ;
-		    	bub_place ( bub, game ) ; 
+		    	//connex ( game, false ) ;              
   
 		    	/* Then we place the new bubble on the launcher */
 		    	bubPosInit ( bub, game ) ;
 		    }
 		  }     
-		}        
- 
+		}         
+
 		SDL_UpdateRect ( screen->screen, 0, 0, 0, 0 ) ; 
 
 	}
 
-	bubarray_freecenters ( game ) ;
+	bubarray_freecenters ( game ) ; 
 	bubarray_init ( game ) ;
 	free ( bub ) ;
 	free ( game ) ;

@@ -242,6 +242,7 @@ void bubcomponent_init ( game_t * game )
 	{
 
 		game->bub_connected_component[i] = ( int * ) malloc ( BUB_NX * sizeof ( int ) ) ;
+
 		j_max = ( i % 2 == 0 ) ? BUB_NX : BUB_NX - 1 ;
 
 		for ( j = 0 ; j < j_max ; j++ )
@@ -249,6 +250,8 @@ void bubcomponent_init ( game_t * game )
 			game->bub_connected_component[i][j] = 0 ;
 		}
 	}
+
+
 }
 
 
@@ -263,6 +266,18 @@ void bubfile_init ( game_t * game )
 
 	game->head = 0 ;
 	game->tail = 0 ;
+}
+
+void freecomponent_array ( game_t * game )
+{
+	unsigned int i ;
+
+	for ( i = 0 ; i < BUB_NY ; i++ )
+	{
+
+		free( game->bub_connected_component[i] ) ;
+	}
+
 }
 
 /* NOTE : FAIRE DES FREE POUR CES DEUX FONCTIONS POUR EVITER FUITE MEMOIRE */
