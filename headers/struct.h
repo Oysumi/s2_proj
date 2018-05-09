@@ -39,6 +39,7 @@ typedef struct {
 
 	SDL_Surface * sprite ;
 	SDL_Rect pos ;
+	int rotation ; /* If the bubble is on the launcher and we move it to te left/right, then the bubble has a different 'angle' */
 
 	unsigned int color ;
 
@@ -65,5 +66,20 @@ typedef struct {
 	int currentTime ;
 
 }timecontrol_t ;
+
+/* Allows to control the descent of the ceiling */
+typedef struct {
+
+	int state ; /* Represent in reality to which stage is situated the ceiling *
+				 * (of 0 meaning that it did not come down ; in 11 yet where it touchs the ground) */
+
+	SDL_Surface * image_ceiling ;
+	SDL_Surface * image_chain ;
+	SDL_Rect position ;
+
+	int pos_x ;
+	int pos_y ;
+
+}ceiling_t ;
 
 #endif

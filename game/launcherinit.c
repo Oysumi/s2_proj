@@ -4,7 +4,7 @@
 
 bool timereached ( timecontrol_t * timer )
 {
-	if ( timer->currentTime - timer->previousTime > 20 )
+	if ( timer->currentTime - timer->previousTime > 30 )
 	{
 		return true ;
 	}
@@ -27,7 +27,15 @@ void launchermov ( input_t * in, game_t * game, bubble_t * bubble, timecontrol_t
    {
      if ( game->currentOrientation > 0 )
      {
-       game->currentOrientation -= 1 ;
+     	if ( bubble->rotation < 22 )
+     	{
+     		bubble->rotation += 1 ;
+     	}
+     	else
+     	{
+     		bubble->rotation = 0 ;
+     	}
+       	game->currentOrientation -= 1 ;
      }
    }
  }
@@ -38,7 +46,15 @@ void launchermov ( input_t * in, game_t * game, bubble_t * bubble, timecontrol_t
    {
      if ( game->currentOrientation < 44 )
      {
-       game->currentOrientation += 1 ;
+     	if ( bubble->rotation < 22 )
+     	{
+     		bubble->rotation += 1 ;
+     	}
+     	else
+     	{
+     		bubble->rotation = 0 ;
+     	}
+       	game->currentOrientation += 1 ;
      }
    }
  }

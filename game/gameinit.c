@@ -100,11 +100,26 @@ void gameInit ( game_t * game )
 
 }
 
-void loadingSprite ( game_t * game, init_t * window )
+void ceilingInit ( ceiling_t * ceil )
 {
-	frameImageInit ( window ) ;
-	launcherImageInit ( window ) ;
-	bubImageInit ( game ) ;
+
+	SDL_Surface * temp ;
+
+	/* Loading the image of the ceiling */
+	temp = SDL_LoadBMP ( "../img/top/frame_top.bmp" ) ;
+	ceil->image_ceiling = SDL_DisplayFormat ( temp ) ;
+
+	/* Loading the image of the chain */
+	temp = SDL_LoadBMP ( "../img/top/frame_chain.bmp") ;
+	ceil->image_chain = SDL_DisplayFormat ( temp ) ;
+
+	SDL_FreeSurface ( temp ) ;
+
+	ceil->position.x = BOARD_LEFT ;
+	ceil->position.y = BOARD_TOP ; /* It's not important at this state */
+
+	ceil->state = 0 ;
+
 }
 
 void freeScreen ( init_t * window )
@@ -112,7 +127,7 @@ void freeScreen ( init_t * window )
 	free ( window ) ;
 }
 
-void setTransparency ( game_t * game, init_t * window ) 
+void setTransparency ( game_t * game, init_t * window, ceiling_t * ceil ) 
 {
 	int colorkey ;
 	unsigned int i ;
@@ -130,9 +145,12 @@ void setTransparency ( game_t * game, init_t * window )
 	{
 		SDL_SetColorKey ( game->bub_colors[i], SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey ) ;
 	}
+
+	SDL_SetColorKey ( ceil->image_ceiling, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey ) ;
+	SDL_SetColorKey ( ceil->image_chain, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey ) ;
 }
 
-void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window, game_t * game, timecontrol_t * timer )
+void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window, game_t * game, timecontrol_t * timer, ceiling_t * ceil )
 {
 	unsigned int i, j ;
 	unsigned int j_max ;
@@ -158,6 +176,31 @@ void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window, game_
 	framePos.y = 0 ;
 
 	SDL_BlitSurface ( window->frame, NULL, window->screen, &framePos ) ;
+
+	/* We can draw the top falling */
+	SDL_Rect ceiling ;
+	SDL_Rect chain ;
+	SDL_Rect test ;
+
+	ceiling.x = ceil->position.x ;
+	ceiling.y = TOP_START + 5 * BUB_SIZE ;
+	/*ceiling.x = ceil->position.x ;
+	ceiling.y = TOP_START + ceil->state * BUB_SIZE ;
+
+	chain.x = 0 ;
+	chain.y = 0 ;
+	chain.h = TOP_START + ceil->state * BUB_SIZE - TOP_HEIGHT ;
+	chain.w = CHAIN_WIDTH ;
+
+	test.x = ( BOARD_RIGHT + BOARD_LEFT - chain.w ) / 2 ;
+	test.y = ceil->position.y ; 
+
+	if ( ceil->state > 0 )
+	{
+		SDL_BlitSurface ( ceil->image_chain, &chain, window->screen, &test ) ;
+		SDL_BlitSurface ( ceil->image_ceiling, NULL, window->screen, &ceiling ) ;
+	}*/
+
 
 	/* Then, we draw the launcher */
 	SDL_Rect launcherImg ;
@@ -193,10 +236,14 @@ void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window, game_
 	    }
 	  }
 	}
+
+	bubRect.y = bub->rotation * BUB_SIZE ;
+
 	
 	/* Display the current bubble which is moving */
 	SDL_BlitSurface ( bub->sprite, &bubRect, window->screen, &(bub->pos) ) ; /* &(bub->position) ? */
-	
+	SDL_BlitSurface ( ceil->image_ceiling, NULL, window->screen, &ceiling ) ;
+
 	free ( temp ) ;
 
 	/* We update the time */
@@ -219,7 +266,7 @@ void get_timer ( timecontrol_t * timer )
 	timer->currentTime = SDL_GetTicks() ;
 }
 
-void initBubblesOnBoard ( game_t * game )
+void initBubblesOnBoard ( game_t * game, bubble_t * bubble )
 {
 	unsigned int i, j, j_max ;
 
@@ -232,6 +279,9 @@ void initBubblesOnBoard ( game_t * game )
 			game->bub_array[i][j] = SDL_GetTicks()*j % 7 + 1 ;
 		}
 	}
+
+	bubble->rotation = 0 ;
+
 }
 
 void bubcomponent_init ( game_t * game )
@@ -298,6 +348,23 @@ bool we_have_a_winner ( game_t * game )
 	}
 	return true ;
 }
+
+bool sky_is_falling ( timecontrol_t * time, ceiling_t * ceil ) 
+{
+	if ( time->currentTime - time->previousTime > 10000 )
+	{
+		ceil->state += 1 ;
+		update_timer ( time ) ;
+	} 
+
+	if ( ceil->state == 11 )
+	{
+		return true ;
+	}
+
+	return false ;
+}
+
 /* NOTE : FAIRE DES FREE POUR CES DEUX FONCTIONS POUR EVITER FUITE MEMOIRE */
 
 #endif

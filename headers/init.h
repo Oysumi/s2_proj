@@ -13,13 +13,15 @@ void bubImageInit ( game_t * game ) ;
 
 void gameInit ( game_t * game ) ;
 
+void ceilingInit ( ceiling_t * ceil ) ;
+
 void loadingSprite ( game_t * game, init_t * window ) ;
 
 void freeScreen ( init_t * window ) ;
 
-void setTransparency ( game_t * game, init_t * window )  ;
+void setTransparency ( game_t * game, init_t * window, ceiling_t * ceil )  ;
 
-void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window, game_t * game, timecontrol_t * timer ) ;
+void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window, game_t * game, timecontrol_t * timer, ceiling_t * ceil ) ;
 
 void update_timer ( timecontrol_t * timer ) ;
 

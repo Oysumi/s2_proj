@@ -152,8 +152,8 @@ bool bubismoving ( bubble_t * bub, game_t * game )
 	double * proj_pos_x = ( double * ) malloc ( sizeof ( double ) ) ;
 	double * proj_pos_y = ( double * ) malloc ( sizeof ( double ) ) ;
 
-	* proj_pos_x = bub->x + bub->dx ;
-	* proj_pos_y = bub->y - bub->dy ;
+	* proj_pos_x = bub->x + bub->dx * VELOCITY ;
+	* proj_pos_y = bub->y - bub->dy * VELOCITY ;
 
 	/* Then we have to check : */
 	/* If there is a collision whith an other bubble */
@@ -332,7 +332,7 @@ void bubLaunched ( bubble_t * bub, game_t * game )
 	}
 }
 
-int connex ( game_t * game, bool color )
+int connex ( game_t * game, ceiling_t * ceil, bool color )
 {
 
 	unsigned int i, j, j_max ;
@@ -359,7 +359,7 @@ int connex ( game_t * game, bool color )
 	{
 		for ( j = 0 ; j < BUB_NX ; j++ )
 		{
-			fill_the_file ( game, 0, j, color ) ;
+			fill_the_file ( game, ceil->state, j, color ) ;
 		}
 		delete_bub ( game, color ) ;
 		return 1 ;
@@ -550,7 +550,7 @@ int fill_the_file ( game_t * game, unsigned int row, unsigned int col, bool colo
 
 	else
 	{
-		/* We have to test the connectivity with possible 6 neighbors while respecting the color of the initial bubble */
+		/* We just have to test the connectivity with possible 6 neighbors */
 		while ( game->head != game->tail )
 		{
 			col_max = ( game->bub_fifo[game->tail][0] % 2 == 0 ) ? BUB_NX : BUB_NX - 1 ;
@@ -726,9 +726,6 @@ int fill_the_file ( game_t * game, unsigned int row, unsigned int col, bool colo
 		}
 	}
 
-	game->head = 0 ;
-	game->tail = 0 ;
-
 	return 1 ;
 
 }
@@ -736,8 +733,6 @@ int fill_the_file ( game_t * game, unsigned int row, unsigned int col, bool colo
 void delete_bub ( game_t * game, bool color )
 {
 	unsigned int i, j, j_max ;
-	unsigned int max ;
-	max = 0 ;
 
 	if ( color )
 	{
@@ -747,33 +742,17 @@ void delete_bub ( game_t * game, bool color )
 
 			for ( j = 0 ; j < j_max ; j++ )
 			{
-				if ( game->bub_array[i][j] > 10 )
+				if ( game->head >= 3 && game->bub_connected_component[i][j] == 1 )
+				{	
+					game->bub_array[i][j] = 0 ;
+				}
+				else if ( game->bub_array[i][j] > 10 )
 				{
 					game->bub_array[i][j] -= 10 ;
 				}
-
-				if ( game->bub_connected_component[i][j] == 1 )
-				{
-					max += 1 ;
-				}
 			}
 		}
 
-		if ( max >= 3 )
-		{
-			for ( i = 0 ; i < BUB_NY ; i++ )
-			{
-				j_max = ( i % 2 == 0 ) ? BUB_NX : BUB_NX - 1 ;
-
-				for ( j = 0 ; j < j_max ; j++ )
-				{
-					if ( game->bub_connected_component[i][j] == 1 )
-					{
-						game->bub_array[i][j] = 0 ;
-					}
-				}
-			}
-		}
 	}
 
 	else
@@ -797,6 +776,9 @@ void delete_bub ( game_t * game, bool color )
 			}
 		}
 	}
+
+	game->head = 0 ;
+	game->tail = 0 ;
 
 	freecomponent_array ( game ) ;
 	bubcomponent_init ( game ) ;

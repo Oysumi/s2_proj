@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include "SDL.h"
 #include <time.h>
+#include <SDL/SDL_ttf.h>
 
 /* Approximate pi value */
 #define PI 3.14159265359
@@ -39,5 +40,10 @@
 
 /* Number of different colors for bubbles */
 #define NUM_COLORS 8
+
+#define TOP_START BOARD_TOP - 13
+#define TOP_HEIGHT 9
+
+#define CHAIN_WIDTH 23
 
 #endif
