@@ -11,9 +11,11 @@ void launcherImageInit ( init_t * window ) ;
 
 void bubImageInit ( game_t * game ) ;
 
-void gameInit ( game_t * game ) ;
+void gameInit ( game_t * game, ceiling_t * ceil ) ;
 
 void ceilingInit ( ceiling_t * ceil ) ;
+
+void ceilingstateInit ( ceiling_t * ceil ) ; 
 
 void loadingSprite ( game_t * game, init_t * window ) ;
 
@@ -38,5 +40,9 @@ void bubfile_init ( game_t * game ) ;
 void freecomponent_array ( game_t * game ) ;
 
 bool we_have_a_winner ( game_t * game ) ;
+
+bool sky_is_falling ( timecontrol_t * time, ceiling_t * ceil, game_t * game, bubble_t * bub ) ;
+
+int game_over ( bubble_t * bub, ceiling_t * ceil, game_t * game ) ;
 
 #endif

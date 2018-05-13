@@ -17,7 +17,7 @@ int main ( int argc, char * argv[] )
 	screenInit ( screen ) ;
 
 	frameImageInit ( screen ) ;   
-	launcherImageInit ( screen ) ;    
+	launcherImageInit ( screen ) ;      
 
 	/* ************************* INITIALIZATION OF THE GAME ************************* */
      
@@ -26,11 +26,11 @@ int main ( int argc, char * argv[] )
 	game = ( game_t * ) malloc ( sizeof ( game_t ) ) ;
 
 	ceiling_t * ceil ;
-	ceil = ( ceiling_t * ) malloc ( sizeof ( ceiling_t ) ) ; 
+	ceil = ( ceiling_t * ) malloc ( sizeof ( ceiling_t ) ) ;  
   
-	gameInit ( game ) ; /* Including bubarray_init */
-	bubImageInit ( game ) ; 
-	ceilingInit ( ceil ) ;    
+  	ceilingInit ( ceil ) ;
+	gameInit ( game, ceil ) ; /* Including bubarray_init */
+	bubImageInit ( game ) ;       
  
 	/* ************************* INITIALIZATION OF THE SPRITES ********************** */
  
@@ -39,7 +39,7 @@ int main ( int argc, char * argv[] )
 
 	/* ************************* INITIALIZATION OF THE POSITIONS ******************** */
 
-	/* Declaration of the variables */              
+	/* Declaration of the variables */                  
 	bubble_t * bub ; 
 	SDL_Rect * launcherPos ;
 
@@ -51,7 +51,7 @@ int main ( int argc, char * argv[] )
 
 	/* *********************** INITIALIZATION OF INPUT VARIABLE ******************** */
 
-	input_t * in ; 
+	input_t * in ;   
 
 	in = ( input_t * ) malloc ( sizeof ( input_t ) ) ;
 
@@ -75,7 +75,7 @@ int main ( int argc, char * argv[] )
  
 	/* ************************ BEGINNING OF THE GAME ****************************** */
 
-	initBubblesOnBoard ( game, bub ) ;   
+	initBubblesOnBoard ( game, bub ) ;        
   
 	while ( !escape ( in ) )
 	{
@@ -93,8 +93,9 @@ int main ( int argc, char * argv[] )
       	if ( we_have_a_winner ( game ) )
       	{
       		printf("CONGRATULATIONS ! YOU WIN !\n") ;
+      		ceilingstateInit ( ceil ) ;
       		bubarray_free ( game ) ;  
-		    gameInit ( game ) ; 
+		    gameInit ( game, ceil ) ; 
 		    bubPosInit ( bub, game ) ;   
 		    initBubblesOnBoard ( game, bub ) ;   
 		    bubcomponent_init ( game ) ;    
@@ -102,15 +103,15 @@ int main ( int argc, char * argv[] )
 
 		/* We regulate the speed of the launcher thanks to a timer */
 		if ( timereached ( time ) ) 
-		{ 
+		{  
 		  launchermov ( in, game, bub, time ) ;
-		} 
+		}  
 
 		if ( bub->launched ) 
 		{
-		  bubLaunched ( bub, game ) ; 
+		  bubLaunched ( bub, game ) ;   
 		}
-  
+   
 		if ( bub->isMoving )
 		{  
  
@@ -119,35 +120,38 @@ int main ( int argc, char * argv[] )
 		   * 2: The bubble is below the limit of the game board : reinitialization of the game *
 		   * 3: The bubble is moving : we calculate the trajectory and make it move normally */
 
-		  if ( !bubismoving ( bub, game ) ) /* Include the 3rd case */
+		  if ( !bubismoving ( bub, game, ceil ) ) /* Include the 3rd case */
 		  {
 		    if ( bub_is_below ( bub ) ) /* 2nd case */
-		    { 
-		      printf("GAME OVER.\n") ; 
-		      bubarray_free ( game ) ; 
-		      gameInit ( game ) ; 
-		      bubPosInit ( bub, game ) ;   
-		      initBubblesOnBoard ( game, bub ) ;  
-		      bubcomponent_init ( game ) ;        
-        
-		    }                
+		    {
+		    	bub_place ( bub, game ) ;
+		    	if ( connex ( game, ceil, true ) == 0 )
+		    	{ 
+		        	game_over ( bub, ceil, game ) ; 
+		        }
+		        else
+		        {
+		        	connex ( game, ceil, false ) ;
+		        	bubPosInit ( bub, game ) ;
+		        }          
+		    }                  
 		    else 
 		    {     
 		    	/* 1st case */       	           	  
 		      	/* We place the bubble in the array so that it will be displayed */
 		      	bub_place ( bub, game ) ; 
 		      	connex ( game, ceil, true ) ; /* 1st step : with colors */
-				connex ( game, ceil, false ) ; /* 2nd step : without colors */                    
+				connex ( game, ceil, false ) ; /* 2nd step : without colors */                       
 
 		    	/* Then we place the new bubble on the launcher */
-		    	bubPosInit ( bub, game ) ;   	   
-		    }  
-		  }     
+		    	bubPosInit ( bub, game ) ;    	         
+		    }       
+		  }         
 		}        
 
 		SDL_UpdateRect ( screen->screen, 0, 0, 0, 0 ) ; 
 		get_timer ( ceil_fall ) ;
-		sky_is_falling ( ceil_fall, ceil ) ; 
+		sky_is_falling ( ceil_fall, ceil, game, bub ) ;          
 
 	}
  

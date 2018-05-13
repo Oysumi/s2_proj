@@ -32,16 +32,16 @@
 #define BUB_STARTY 457
 
 /* Velocity of bubbles */
-#define VELOCITY 2
+#define VELOCITY 1
 
 /* Size of bub_array[BUB_NY][BUB_NX] */
 #define BUB_NX 8 // max. number of bubbles in horizontal direction
-#define BUB_NY 11 // max. number of bubbles in vertical direction
+#define BUB_NY 12 // max. number of bubbles in vertical direction
 
 /* Number of different colors for bubbles */
 #define NUM_COLORS 8
 
-#define TOP_START BOARD_TOP - 13
+#define TOP_START BOARD_TOP - 9
 #define TOP_HEIGHT 9
 
 #define CHAIN_WIDTH 23

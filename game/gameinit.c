@@ -77,7 +77,7 @@ void bubImageInit ( game_t * game )
 	game->currentOrientation = 22 ;
 }
 
-void gameInit ( game_t * game )
+void gameInit ( game_t * game, ceiling_t * ceil )
 {
 
 	/* Initialize bub array which informs about the positions and the colors of bubbles displayed on the game board */
@@ -88,7 +88,7 @@ void gameInit ( game_t * game )
 
 	/* We fill the cells of the array with the different possible coordinates of the bubbles */
 	game->bub_center = ( int * * * ) malloc ( BUB_NY * sizeof ( int * * ) ) ;
-	bubarray_initcenters ( game ) ;
+	bubarray_initcenters ( game, ceil ) ;
 
 	/* We first fill the cells of this array with zeros */
 	game->bub_connected_component = ( int * * ) malloc ( BUB_NY * sizeof ( int * ) ) ;
@@ -118,8 +118,13 @@ void ceilingInit ( ceiling_t * ceil )
 	ceil->position.x = BOARD_LEFT ;
 	ceil->position.y = BOARD_TOP ; /* It's not important at this state */
 
-	ceil->state = 0 ;
+	ceilingstateInit ( ceil ) ;
 
+}
+
+void ceilingstateInit ( ceiling_t * ceil )
+{
+	ceil->state = 0 ;
 }
 
 void freeScreen ( init_t * window )
@@ -183,13 +188,11 @@ void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window, game_
 	SDL_Rect test ;
 
 	ceiling.x = ceil->position.x ;
-	ceiling.y = TOP_START + 5 * BUB_SIZE ;
-	/*ceiling.x = ceil->position.x ;
-	ceiling.y = TOP_START + ceil->state * BUB_SIZE ;
+	ceiling.y = TOP_START + ceil->state * 35 ;
 
 	chain.x = 0 ;
 	chain.y = 0 ;
-	chain.h = TOP_START + ceil->state * BUB_SIZE - TOP_HEIGHT ;
+	chain.h = TOP_START + ceil->state * 35 - 25 ;
 	chain.w = CHAIN_WIDTH ;
 
 	test.x = ( BOARD_RIGHT + BOARD_LEFT - chain.w ) / 2 ;
@@ -199,7 +202,7 @@ void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window, game_
 	{
 		SDL_BlitSurface ( ceil->image_chain, &chain, window->screen, &test ) ;
 		SDL_BlitSurface ( ceil->image_ceiling, NULL, window->screen, &ceiling ) ;
-	}*/
+	}
 
 
 	/* Then, we draw the launcher */
@@ -229,7 +232,7 @@ void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window, game_
 	    if ( game->bub_array[i][j] > 0 )
 	    {
 	      /* Get the position of bubbles */
-	      temp = calculPosBub ( i, j, temp ) ;
+	      temp = calculPosBub ( i, j, temp, ceil ) ;
 	      
 	      /* Display them */
 	      SDL_BlitSurface ( game->bub_colors[game->bub_array[i][j] - 1], &bubRect, window->screen, temp ) ;
@@ -276,7 +279,7 @@ void initBubblesOnBoard ( game_t * game, bubble_t * bubble )
 
 		for ( j = 0 ; j < j_max ; j++ )
 		{
-			game->bub_array[i][j] = SDL_GetTicks()*j % 7 + 1 ;
+			game->bub_array[i][j] = rand_color() ;
 		}
 	}
 
@@ -349,12 +352,13 @@ bool we_have_a_winner ( game_t * game )
 	return true ;
 }
 
-bool sky_is_falling ( timecontrol_t * time, ceiling_t * ceil ) 
+bool sky_is_falling ( timecontrol_t * time, ceiling_t * ceil, game_t * game, bubble_t * bub ) 
 {
-	if ( time->currentTime - time->previousTime > 10000 )
+	if ( time->currentTime - time->previousTime > 4000 )
 	{
 		ceil->state += 1 ;
 		update_timer ( time ) ;
+		bubarray_centersrecalcul ( game, ceil, bub ) ;
 	} 
 
 	if ( ceil->state == 11 )
@@ -365,6 +369,17 @@ bool sky_is_falling ( timecontrol_t * time, ceiling_t * ceil )
 	return false ;
 }
 
+int game_over ( bubble_t * bub, ceiling_t * ceil, game_t * game )
+{
+	printf("GAME OVER.\n") ; 
+	ceilingstateInit ( ceil ) ;   
+	bubarray_free ( game ) ; 
+	gameInit ( game, ceil ) ; 
+	bubPosInit ( bub, game ) ;   
+	initBubblesOnBoard ( game, bub ) ;  
+	bubcomponent_init ( game ) ;  
+	return EXIT_SUCCESS ;
+}
 /* NOTE : FAIRE DES FREE POUR CES DEUX FONCTIONS POUR EVITER FUITE MEMOIRE */
 
 #endif

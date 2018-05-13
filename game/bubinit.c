@@ -30,7 +30,7 @@ void bubarray_init ( game_t * game )
 	}
 }
 
-void bubarray_initcenters ( game_t * game )
+void bubarray_initcenters ( game_t * game, ceiling_t * ceil )
 {
 	SDL_Rect * tempCenters = ( SDL_Rect * ) malloc ( sizeof ( SDL_Rect ) ) ;
 
@@ -52,7 +52,7 @@ void bubarray_initcenters ( game_t * game )
 			game->bub_center[i][j] = ( int * ) malloc ( 2 * sizeof ( int ) ) ;
 
 			/* We are going to calculate the coordinates of the various possible positions */
-			tempCenters = calculPosBub ( i, j, tempCenters ) ; /* A VOIR */
+			tempCenters = calculPosBub ( i, j, tempCenters, ceil ) ; /* A VOIR */
 
 			/* We add BUB_SIZE/2 to the coordinates to obtain the center */
 			game->bub_center[i][j][0] = tempCenters->x + BUB_SIZE / 2 ;
@@ -61,6 +61,30 @@ void bubarray_initcenters ( game_t * game )
 	}
 
 	free ( tempCenters ) ;
+
+}
+
+int bubarray_centersrecalcul ( game_t * game, ceiling_t * ceil, bubble_t * bub )
+{
+	unsigned int i, j, j_max ; /* used for a loop */
+
+	for ( i = 0 ; i < BUB_NY ; i ++ )
+	{
+		j_max = ( i % 2 == 0 ) ? BUB_NX : BUB_NX - 1 ;
+
+		for ( j = 0 ; j < j_max ; j++ )
+		{
+			game->bub_center[i][j][1] += 35 ;
+			//printf("game->bub_center[%d][%d][1] = %d\nSCREEN_HEIGHT - LAUNCHER_HEIGHT = %d\n", i, j, game->bub_center[i][j][1], SCREEN_HEIGHT-LAUNCHER_HEIGHT) ;
+			if ( game->bub_array[i][j] > 0 && game->bub_center[i][j][1] >= SCREEN_HEIGHT - LAUNCHER_HEIGHT + 35 )
+			{
+				game_over ( bub, ceil, game ) ;
+				return 1 ;
+			}
+		}
+	}
+
+	return 2 ;
 
 }
 
@@ -103,7 +127,7 @@ void bubarray_freecenters ( game_t * game )
 }
 
 /* Calculate the different possible positions of bubbles on the game board */
-SDL_Rect * calculPosBub ( unsigned int i, unsigned int j, SDL_Rect * bubPos )
+SDL_Rect * calculPosBub ( unsigned int i, unsigned int j, SDL_Rect * bubPos, ceiling_t * ceil )
 {
 	/* Distance between two bubbles ( varies according to the parity of 'line' ) */
 	unsigned int dx ;
@@ -112,7 +136,7 @@ SDL_Rect * calculPosBub ( unsigned int i, unsigned int j, SDL_Rect * bubPos )
 	/* The position depends on the parity of the line. If we are on an even line, then there are 8 bubbles */
 	/* Otherwise, we add a half-bubble to the left board */
 	bubPos->x = ( i % 2 == 0 ) ? BOARD_LEFT + j*dx : BOARD_LEFT + BUB_SIZE / 2 + j*dx ;
-	bubPos->y = BOARD_TOP + (35 * i) ; /* 35 =  ( 40 * sqrt(3) ) / 2 */
+	bubPos->y = BOARD_TOP + 35 * ( i + ceil->state ) ; /* 35 =  ( 40 * sqrt(3) ) / 2 */
 
 	return bubPos ;
 }
@@ -136,16 +160,10 @@ void bubPosInit ( bubble_t * bubble, game_t * game )
 unsigned int rand_color ( void )
 {
 
-	//unsigned int rand_number ;
-
-	//srand(time(NULL)) ; /* initialization of rand */
-	//rand_number = rand() % ( NUM_COLORS ) ; /* NOTE : current_col doit être compris entre 1 et 8, faire modif plus tard */
-	
-	//return rand_number ;
-	return SDL_GetTicks() % NUM_COLORS ;
+	return clock() % ( NUM_COLORS - 1 ) + 1 ;
 }
 
-bool bubismoving ( bubble_t * bub, game_t * game )
+bool bubismoving ( bubble_t * bub, game_t * game, ceiling_t * ceil )
 {
 
 	/* First we calculate the projection of the bubble */
@@ -164,7 +182,7 @@ bool bubismoving ( bubble_t * bub, game_t * game )
 	}
 
 	/* If the bubble hits the top */
-	if ( * proj_pos_y <= ( double ) BOARD_TOP )
+	if ( * proj_pos_y <= ( double ) BOARD_TOP + ceil->state * 35 )
 	{
 		* proj_pos_y = BOARD_TOP ;
 		bub->isMoving = false ;
@@ -348,8 +366,16 @@ int connex ( game_t * game, ceiling_t * ceil, bool color )
 				if ( game->bub_connected_component[i][j] == 1 )
 				{
 					fill_the_file ( game, i, j, color ) ;
-					delete_bub ( game, color ) ;
-					return 1 ;
+					if ( delete_bub ( game, color ) == 1 )
+					{
+						printf("OUI\n") ;
+						return 1 ;
+					}
+					else
+				    {
+				    	printf("NON\n") ;
+				    	return 0 ;
+				    }
 				}
 			}
 		}
@@ -359,7 +385,7 @@ int connex ( game_t * game, ceiling_t * ceil, bool color )
 	{
 		for ( j = 0 ; j < BUB_NX ; j++ )
 		{
-			fill_the_file ( game, ceil->state, j, color ) ;
+			fill_the_file ( game, 0, j, color ) ;
 		}
 		delete_bub ( game, color ) ;
 		return 1 ;
@@ -730,9 +756,11 @@ int fill_the_file ( game_t * game, unsigned int row, unsigned int col, bool colo
 
 }
 
-void delete_bub ( game_t * game, bool color )
+int delete_bub ( game_t * game, bool color )
 {
 	unsigned int i, j, j_max ;
+	int result ;
+	result = 0 ;
 
 	if ( color )
 	{
@@ -745,6 +773,8 @@ void delete_bub ( game_t * game, bool color )
 				if ( game->head >= 3 && game->bub_connected_component[i][j] == 1 )
 				{	
 					game->bub_array[i][j] = 0 ;
+					printf("CA SUPPRIME\n") ;
+					result = 1 ;
 				}
 				else if ( game->bub_array[i][j] > 10 )
 				{
@@ -752,6 +782,9 @@ void delete_bub ( game_t * game, bool color )
 				}
 			}
 		}
+
+		printf("result = %d\n", result) ;
+		return result ;
 
 	}
 
@@ -782,6 +815,8 @@ void delete_bub ( game_t * game, bool color )
 
 	freecomponent_array ( game ) ;
 	bubcomponent_init ( game ) ;
+
+	return result ;
 
 }
 
