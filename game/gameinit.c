@@ -97,6 +97,9 @@ void gameInit ( game_t * game, ceiling_t * ceil )
 	/* We have to init the file */
 	game->bub_fifo = ( int * * ) malloc ( BUB_NY * BUB_NX * sizeof ( int * ) ) ;
 	bubfile_init ( game ) ;
+	
+	/* Initialize bub array which informs about the state of the bubble. If we have a one on a cell, then it means that a bubble has to fall */
+	game->bub_falling = ( int ) ... ;
 
 }
 
@@ -352,7 +355,7 @@ bool we_have_a_winner ( game_t * game )
 	return true ;
 }
 
-bool sky_is_falling ( timecontrol_t * time, ceiling_t * ceil, game_t * game, bubble_t * bub ) 
+int sky_is_falling ( timecontrol_t * time, ceiling_t * ceil, game_t * game, bubble_t * bub ) 
 {
 	if ( time->currentTime - time->previousTime > 4000 )
 	{
@@ -361,12 +364,7 @@ bool sky_is_falling ( timecontrol_t * time, ceiling_t * ceil, game_t * game, bub
 		bubarray_centersrecalcul ( game, ceil, bub ) ;
 	} 
 
-	if ( ceil->state == 11 )
-	{
-		return true ;
-	}
-
-	return false ;
+	return 1 ;
 }
 
 int game_over ( bubble_t * bub, ceiling_t * ceil, game_t * game )

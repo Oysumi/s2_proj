@@ -18,6 +18,7 @@ typedef struct {
 /* Structure to access to the positions of bubbles */
 typedef struct {
 	SDL_Surface * bub_colors[NUM_COLORS] ; /* Will store the various images of bubbles in different cells */
+	SDL_Surface * bub_explosion[NUM_COLORS] ; /* Will store the images of the bubbles exploding in defferent cells */
 
 	int * * bub_array ; 		   		   /* Inform about the positions and the colors of bubbles displayed on the game board */
 
@@ -30,6 +31,10 @@ typedef struct {
 	int * * bub_fifo ;					   /* Represent in reality a file which will help in the connectivity of bubbles */
 	int head ;
 	int tail ;
+	
+	int * * bub_falling ;
+	int fall_head ;
+	int fall_tail ;
 					    
 	unsigned int currentOrientation ; 	   /* Corresponds to the image of the current launcher */
 }game_t;
@@ -52,6 +57,8 @@ typedef struct {
 
 	bool launched ;
 	bool isMoving ;
+	bool isExplosing ;
+	bool isFalling ;
 
 	/* Step of movement */
 	double dx ; 

@@ -8,7 +8,7 @@
 int main ( int argc, char * argv[] )
 {
 
-	/* ************************ INITIALIZATION OF THE SCREEN ************************ */
+	/* ************************ INITIALIZATION OF THE SCREEN ************************ */  
 
 	/* Declaration of the variables */
 	init_t * screen ; 
@@ -29,9 +29,9 @@ int main ( int argc, char * argv[] )
 	ceil = ( ceiling_t * ) malloc ( sizeof ( ceiling_t ) ) ;  
   
   	ceilingInit ( ceil ) ;
-	gameInit ( game, ceil ) ; /* Including bubarray_init */
+	gameInit ( game, ceil ) ; /* Including bubarray_init */       
 	bubImageInit ( game ) ;       
- 
+  
 	/* ************************* INITIALIZATION OF THE SPRITES ********************** */
  
 	/* We add the transparency so that the image are displayed without purple outline */
@@ -144,7 +144,7 @@ int main ( int argc, char * argv[] )
 				connex ( game, ceil, false ) ; /* 2nd step : without colors */                       
 
 		    	/* Then we place the new bubble on the launcher */
-		    	bubPosInit ( bub, game ) ;    	         
+		    	bubPosInit ( bub, game ) ;     	         
 		    }       
 		  }         
 		}        

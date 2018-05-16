@@ -41,7 +41,7 @@ void freecomponent_array ( game_t * game ) ;
 
 bool we_have_a_winner ( game_t * game ) ;
 
-bool sky_is_falling ( timecontrol_t * time, ceiling_t * ceil, game_t * game, bubble_t * bub ) ;
+int sky_is_falling ( timecontrol_t * time, ceiling_t * ceil, game_t * game, bubble_t * bub ) ;
 
 int game_over ( bubble_t * bub, ceiling_t * ceil, game_t * game ) ;
 

@@ -147,6 +147,8 @@ void bubPosInit ( bubble_t * bubble, game_t * game )
 	bubble->sprite = game->bub_colors[bubble->color - 1] ;
 	bubble->launched = 0 ;
 	bubble->isMoving = 0 ;
+	bubble->isExplosing = 0 ;
+	bubble->isFalling = 0 ;
 	bubble->launcher_x = BUB_STARTX ;
 	bubble->launcher_y = BUB_STARTY ;
 
@@ -159,8 +161,10 @@ void bubPosInit ( bubble_t * bubble, game_t * game )
 
 unsigned int rand_color ( void )
 {
+  srand( time(NULL) * clock() ) ;
+  int color = abs(rand() * clock()) ;
 
-	return clock() % ( NUM_COLORS - 1 ) + 1 ;
+  return ( color % ( NUM_COLORS - 1 ) ) + 1 ;
 }
 
 bool bubismoving ( bubble_t * bub, game_t * game, ceiling_t * ceil )
