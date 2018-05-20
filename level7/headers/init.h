@@ -25,7 +25,7 @@ void freeScreen ( init_t * window ) ;
 
 void setTransparency ( game_t * game, init_t * window, ceiling_t * ceil )  ;
 
-void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window, game_t * game, timecontrol_t * timer, ceiling_t * ceil ) ;
+void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window, game_t * game, timecontrol_t * timer, ceiling_t * ceil, timecontrol_t * explosion, timecontrol_t * fall ) ;
 
 void update_timer ( timecontrol_t * timer ) ;
 
@@ -43,10 +43,14 @@ void freecomponent_array ( game_t * game ) ;
 
 bool we_have_a_winner ( game_t * game ) ;
 
-int sky_is_falling ( timecontrol_t * time, ceiling_t * ceil, game_t * game, bubble_t * bub ) ;
+int sky_is_falling ( timecontrol_t * time, ceiling_t * ceil, game_t * game, bubble_t * bub, timecontrol_t * expl, timecontrol_t * fall ) ;
 
-int game_over ( bubble_t * bub, ceiling_t * ceil, game_t * game, timecontrol_t * time ) ;
+int game_over ( bubble_t * bub, ceiling_t * ceil, game_t * game, timecontrol_t * time, timecontrol_t * expl, timecontrol_t * fall ) ;
 
-int you_win ( bubble_t * bub, ceiling_t * ceil, game_t * game, timecontrol_t * time ) ;
+int you_win ( bubble_t * bub, ceiling_t * ceil, game_t * game, timecontrol_t * time, timecontrol_t * expl, timecontrol_t * fall ) ;
+
+bool limite_fps_expl ( timecontrol_t * time ) ;
+
+bool limite_fps_fall ( timecontrol_t * time ) ;
 
 #endif

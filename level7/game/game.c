@@ -63,11 +63,17 @@ int main ( int argc, char * argv[] )
 	/* *********************** INITIALIZATION OF TIME VARIABLES ********************* */
  
 	/* Will regulate the number of image and the speed of the launcher */
-	timecontrol_t * time ;   
+	timecontrol_t * time ;
+	timecontrol_t * explosion_time ; 
+	timecontrol_t * fall_time ;         
   
 	time = ( timecontrol_t * ) malloc ( sizeof ( timecontrol_t ) ) ; 
+	explosion_time = ( timecontrol_t * ) malloc ( sizeof ( timecontrol_t ) ) ; 
+	fall_time = ( timecontrol_t * ) malloc ( sizeof ( timecontrol_t ) ) ;
  
 	init_timer ( time ) ;  
+	init_timer ( explosion_time ) ;
+	init_timer ( fall_time ) ; 
 
 	/* Allow the ceiling to fall */
 	timecontrol_t * ceil_fall ;
@@ -82,7 +88,7 @@ int main ( int argc, char * argv[] )
 	{
 		  
 		/* We refresh the screen to draw all the images/sprites */  
-		updateScreen ( bub, launcherPos, screen, game, time, ceil ) ;
+		updateScreen ( bub, launcherPos, screen, game, time, ceil, explosion_time, fall_time ) ;
        
 		/* We launch the timer */
 		get_timer ( time ) ; 
@@ -95,13 +101,13 @@ int main ( int argc, char * argv[] )
 		{  
 		  launchermov ( in, game, bub, time ) ;
 		}  
-
-		if ( bub->launched ) 
-		{
-		  bubLaunched ( bub, game ) ;   
+           
+		if ( bub->launched )             
+		{ 
+		  bubLaunched ( bub, game ) ;    
 		}
    
-		if ( bub->isMoving )
+		if ( bub->isMoving )   
 		{   
   
 		  /* We have to check differen t cases *    
@@ -116,12 +122,12 @@ int main ( int argc, char * argv[] )
 		    	bub_place ( bub, game ) ;
 		    	if ( connex ( game, ceil, true ) == 0 ) 
 		    	{ 
-		        	game_over ( bub, ceil, game, time ) ; 
+		        	game_over ( bub, ceil, game, time, explosion_time, fall_time ) ; 
 		        }
 		        else
 		        {
 		        	connex ( game, ceil, false ) ;
-		        	bubPosInit ( bub, game ) ;
+		        	bubPosInit ( bub, game ) ;              	
 		        }          
 		    }                    	
 		    else    
@@ -135,12 +141,12 @@ int main ( int argc, char * argv[] )
  				/* We check if the player won */
       			if ( we_have_a_winner ( game ) )  
       			{
-      				you_win ( bub, ceil, game, time ) ;   
+      				you_win ( bub, ceil, game, time, explosion_time, fall_time ) ;   
       			} 
       			/* If not, we place the new bubble on the launcher */
       			else
-		    	{
-		    		bubPosInit ( bub, game ) ;   
+		    	{ 
+		    		bubPosInit ( bub, game ) ;    
 		    	}        	           
 		    }        
 		  }            
@@ -148,7 +154,7 @@ int main ( int argc, char * argv[] )
 
 		SDL_UpdateRect ( screen->screen, 0, 0, 0, 0 ) ; 
 		get_timer ( ceil_fall ) ;
-		sky_is_falling ( ceil_fall, ceil, game, bub ) ;          
+		sky_is_falling ( ceil_fall, ceil, game, bub, explosion_time, fall_time ) ;          
 
 	}
  

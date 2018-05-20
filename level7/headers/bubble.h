@@ -8,7 +8,7 @@ void bubarray_init ( game_t * game ) ;
 
 void bubarray_initcenters ( game_t * game, ceiling_t * ceil ) ;
 
-int bubarray_centersrecalcul ( game_t * game, ceiling_t * ceil, bubble_t * bub, timecontrol_t * time ) ;
+int bubarray_centersrecalcul ( game_t * game, ceiling_t * ceil, bubble_t * bub, timecontrol_t * time, timecontrol_t * expl, timecontrol_t * fall ) ;
 
 void bubfalling_init ( game_t * game ) ;
 
@@ -48,9 +48,9 @@ int delete_bub ( game_t * game, bool color, ceiling_t * ceil ) ;
 
 bool bub_is_on_launcher ( bubble_t * bub ) ;
 
-void bub_explosion ( game_t * game, unsigned int i ) ;
+void bub_explosion ( game_t * game, unsigned int i, timecontrol_t * explosion, timecontrol_t * fall ) ;
 
-void bub_falling ( game_t * game, unsigned int i ) ;
+void bub_falling ( game_t * game, unsigned int i, timecontrol_t * time ) ;
 
 void bub_disappears ( game_t * game ) ;
 

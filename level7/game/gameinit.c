@@ -221,7 +221,7 @@ void setTransparency ( game_t * game, init_t * window, ceiling_t * ceil )
 	SDL_SetColorKey ( ceil->image_chain, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey ) ;
 }
 
-void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window, game_t * game, timecontrol_t * timer, ceiling_t * ceil )
+void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window, game_t * game, timecontrol_t * timer, ceiling_t * ceil, timecontrol_t * explosion, timecontrol_t * fall )
 {
 	unsigned int i, j ;
 	unsigned int j_max ;
@@ -306,6 +306,9 @@ void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window, game_
 	  }
 	}
 
+	get_timer ( explosion ) ;
+	get_timer ( fall ) ;
+
 	for ( i = 0 ; i < game->fall_head ; i++ )
 	{ 
 		if ( game->nb_bubout == game->nb_bubexplosions - 1 )
@@ -315,16 +318,26 @@ void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window, game_
 		}
 		if ( game->bub_falling[i].isExplosing )
 		{
-			bub_explosion ( game, i ) ;
+			bub_explosion ( game, i, explosion, fall ) ;
 		}
 		else
-		{
-			bub_falling ( game, i ) ;
+		{ 
+			bub_falling ( game, i, fall ) ;
 		}
 		if ( !bub_isOut ( game, i ) )
 		{
 			SDL_BlitSurface ( game->bub_explosion[game->bub_falling[i].bub_color - 1], game->bub_falling[i].image, window->screen, game->bub_falling[i].position ) ;
 		} 
+	}
+
+	if ( limite_fps_expl ( explosion ) )
+	{
+		update_timer ( explosion ) ;
+	}
+
+	if ( limite_fps_fall ( fall ) )
+	{
+		update_timer ( fall ) ;
 	}
 
 	game->nb_bubout = 0 ;
@@ -440,19 +453,19 @@ bool we_have_a_winner ( game_t * game )
 	return true ;
 }
 
-int sky_is_falling ( timecontrol_t * time, ceiling_t * ceil, game_t * game, bubble_t * bub ) 
+int sky_is_falling ( timecontrol_t * time, ceiling_t * ceil, game_t * game, bubble_t * bub, timecontrol_t * expl, timecontrol_t * fall ) 
 {
 	if ( time->currentTime - time->previousTime > 5000 )
 	{
 		ceil->state += 1 ;
 		update_timer ( time ) ;
-		bubarray_centersrecalcul ( game, ceil, bub, time ) ;
+		bubarray_centersrecalcul ( game, ceil, bub, time, expl, fall ) ;
 	} 
 
 	return 1 ;
 }
 
-int game_over ( bubble_t * bub, ceiling_t * ceil, game_t * game, timecontrol_t * time )
+int game_over ( bubble_t * bub, ceiling_t * ceil, game_t * game, timecontrol_t * time, timecontrol_t * expl, timecontrol_t * fall )
 {
 	printf("GAME OVER.\n") ; 
 	ceilingstateInit ( ceil ) ;   
@@ -462,11 +475,15 @@ int game_over ( bubble_t * bub, ceiling_t * ceil, game_t * game, timecontrol_t *
 	bubPosInit ( bub, game ) ; 
 	bubcomponent_init ( game ) ; 
 	update_timer ( time ) ;
+	update_timer ( expl ) ;
+	update_timer ( fall ) ;
 	get_timer ( time ) ; 
+	get_timer ( expl ) ;
+	get_timer ( fall ) ;
 	return EXIT_SUCCESS ;
 }
 
-int you_win ( bubble_t * bub, ceiling_t * ceil, game_t * game, timecontrol_t * time )
+int you_win ( bubble_t * bub, ceiling_t * ceil, game_t * game, timecontrol_t * time, timecontrol_t * expl, timecontrol_t * fall )
 {
 	printf("CONGRATULATIONS ! YOU WIN !\n") ;
     ceilingstateInit ( ceil ) ;
@@ -476,9 +493,32 @@ int you_win ( bubble_t * bub, ceiling_t * ceil, game_t * game, timecontrol_t * t
 	bubPosInit ( bub, game ) ; 
 	bubcomponent_init ( game ) ;
 	update_timer ( time ) ;
+	update_timer ( expl ) ;
+	update_timer ( fall ) ;
 	get_timer ( time ) ;
+	get_timer ( expl ) ;
+	get_timer ( fall ) ;
 	return EXIT_SUCCESS ; 
 }
+
+bool limite_fps_expl ( timecontrol_t * time )
+{
+	if ( time->currentTime - time->previousTime >= 12 )
+	{
+		return true ;
+	}
+	return false ;
+}
+
+bool limite_fps_fall ( timecontrol_t * time )
+{
+	if ( time->currentTime - time->previousTime >= 0.3 )
+	{
+		return true ;
+	}
+	return false ;
+}
+
 /* NOTE : FAIRE DES FREE POUR CES DEUX FONCTIONS POUR EVITER FUITE MEMOIRE */
 
 #endif
