@@ -102,7 +102,7 @@ int main ( int argc, char * argv[] )
 		}
    
 		if ( bub->isMoving )
-		{  
+		{   
   
 		  /* We have to check differen t cases *    
 		   * 1: The bubble is not moving anymore : maybe it hits the top board, or another bubble *

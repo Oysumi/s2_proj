@@ -882,7 +882,7 @@ void bub_explosion ( game_t * game, unsigned int i )
 
 void bub_falling ( game_t * game, unsigned int i )
 {
-	game->bub_falling[i].position->y += 3 ;
+	game->bub_falling[i].position->y += 1 ;
 }
 
 void bub_disappears ( game_t * game )
