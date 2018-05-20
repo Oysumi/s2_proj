@@ -64,7 +64,7 @@ void bubarray_initcenters ( game_t * game, ceiling_t * ceil )
 
 }
 
-int bubarray_centersrecalcul ( game_t * game, ceiling_t * ceil, bubble_t * bub )
+int bubarray_centersrecalcul ( game_t * game, ceiling_t * ceil, bubble_t * bub, timecontrol_t * time )
 {
 	unsigned int i, j, j_max ; /* used for a loop */
 
@@ -75,10 +75,9 @@ int bubarray_centersrecalcul ( game_t * game, ceiling_t * ceil, bubble_t * bub )
 		for ( j = 0 ; j < j_max ; j++ )
 		{
 			game->bub_center[i][j][1] += 35 ;
-			//printf("game->bub_center[%d][%d][1] = %d\nSCREEN_HEIGHT - LAUNCHER_HEIGHT = %d\n", i, j, game->bub_center[i][j][1], SCREEN_HEIGHT-LAUNCHER_HEIGHT) ;
 			if ( game->bub_array[i][j] > 0 && game->bub_center[i][j][1] >= SCREEN_HEIGHT - LAUNCHER_HEIGHT + 35 )
 			{
-				game_over ( bub, ceil, game ) ;
+				game_over ( bub, ceil, game, time ) ;
 				return 1 ;
 			}
 		}
@@ -143,7 +142,7 @@ SDL_Rect * calculPosBub ( unsigned int i, unsigned int j, SDL_Rect * bubPos, cei
 
 void bubPosInit ( bubble_t * bubble, game_t * game )
 {
-	bubble->color = rand_color() + 1 ;
+	bubble->color = give_a_bubble( bubble, game ) + 1 ;
 	bubble->sprite = game->bub_colors[bubble->color - 1] ;
 	bubble->launched = 0 ;
 	bubble->isMoving = 0 ;
@@ -157,12 +156,41 @@ void bubPosInit ( bubble_t * bubble, game_t * game )
 	bubble->y = bubble->launcher_y ;
 } 
 
+unsigned int give_a_bubble ( bubble_t * bubble, game_t * game )
+{
+	unsigned int tab_color[NUM_COLORS] ;
+	unsigned int i, j, j_max ;
+
+	memset ( &tab_color, 0, sizeof ( tab_color ) ) ;
+
+	for ( i = 0 ; i < BUB_NY ; i++ )
+	{
+		j_max = ( i % 2 == 0 ) ? BUB_NX : BUB_NX - 1 ;
+		for ( j = 0 ; j < j_max ; j++ )
+		{
+			if ( game->bub_array[i][j] > 0 )
+			{
+				tab_color[game->bub_array[i][j] - 1] += 1 ;
+			} 
+		}
+	}
+
+	i = rand_color() - 1 ;
+
+	while ( tab_color[i] == 0 )
+	{
+		i = rand_color() - 1 ;
+	}
+
+	return i ;
+}
+
 unsigned int rand_color ( void )
 {
   srand( time(NULL) * clock() ) ;
   int color = abs(rand() * clock()) ;
 
-  return ( color % ( NUM_COLORS - 1 ) ) + 1 ;
+  return  color % ( NUM_COLORS - 1 ) + 1 ;
 }
 
 bool bubismoving ( bubble_t * bub, game_t * game, ceiling_t * ceil )
@@ -354,7 +382,6 @@ void bubLaunched ( bubble_t * bub, game_t * game )
 
 int connex ( game_t * game, ceiling_t * ceil, bool color )
 {
-
 	unsigned int i, j, j_max ;
 
 	if ( color )
@@ -370,12 +397,10 @@ int connex ( game_t * game, ceiling_t * ceil, bool color )
 					fill_the_file ( game, i, j, color ) ;
 					if ( delete_bub ( game, color, ceil ) == 1 )
 					{
-						printf("OUI\n") ;
 						return 1 ;
 					}
 					else
 				    {
-				    	printf("NON\n") ;
 				    	return 0 ;
 				    }
 				}
@@ -762,10 +787,8 @@ int delete_bub ( game_t * game, bool color, ceiling_t * ceil )
 {
 	unsigned int i, j, j_max ;
 	int result ;
-	int explosion ;
 
 	result = 0 ;
-	explosion = 0 ;
 
 	if ( color )
 	{
@@ -777,26 +800,18 @@ int delete_bub ( game_t * game, bool color, ceiling_t * ceil )
 			{
 				if ( game->head >= 3 && game->bub_connected_component[i][j] == 1 )
 				{	
-					printf("etape 1\n") ;
-					game->bub_falling[explosion].bub_color = ( game->bub_array[i][j] > 10 ) ? game->bub_array[i][j] - 10 : game->bub_array[i][j] ;
-					printf("etape 2\n") ;
-					game->bub_falling[explosion].image->y = 0 ;
-					printf("etape 3\n") ;
-					game->bub_falling[explosion].image->x = 0 ;
-					printf("etape 4\n") ;
-					game->bub_falling[explosion].image->w = BUB_EXPL_SIZE ;
-					printf("etape 5\n") ;
-					game->bub_falling[explosion].image->h = BUB_EXPL_SIZE ;
-					printf("etape 6\n") ;
-					game->bub_falling[explosion].position = calculPosBub ( i, j, game->bub_falling[explosion].position, ceil ) ;
-					printf("etape 7\n") ;
-					game->bub_falling[explosion].isExplosing = 1 ;
+					game->bub_falling[game->counter].bub_color = ( game->bub_array[i][j] > 10 ) ? game->bub_array[i][j] - 10 : game->bub_array[i][j] ;
+					game->bub_falling[game->counter].image->y = 0 ;
+					game->bub_falling[game->counter].image->x = 0 ;
+					game->bub_falling[game->counter].image->w = BUB_EXPL_SIZE ;
+					game->bub_falling[game->counter].image->h = BUB_EXPL_SIZE ;
+					game->bub_falling[game->counter].position = calculPosBub ( i, j, game->bub_falling[game->counter].position, ceil ) ;
+					game->bub_falling[game->counter].isExplosing = 1 ;
 					game->fall_head += 1 ;
 					game->nb_bubexplosions += 1 ;
 					game->bub_array[i][j] = 0 ;
-					printf("CA SUPPRIME\n") ;
 					result = 1 ;
-					explosion += 1 ;
+					game->counter += 1 ;
 				}
 				else if ( game->bub_array[i][j] > 10 )
 				{
@@ -805,7 +820,6 @@ int delete_bub ( game_t * game, bool color, ceiling_t * ceil )
 			}
 		}
 
-		printf("result = %d\n", result) ;
 		return result ;
 
 	}
@@ -826,16 +840,17 @@ int delete_bub ( game_t * game, bool color, ceiling_t * ceil )
 
 				if ( game->bub_connected_component[i][j] == 0 && game->bub_array[i][j] > 0 )
 				{
-					game->bub_falling[explosion].bub_color = ( game->bub_array[i][j] > 10 ) ? game->bub_array[i][j] - 10 : game->bub_array[i][j] ;
-					game->bub_falling[explosion].image->y = 0 ;
-					game->bub_falling[explosion].image->x = 0 ;
-					game->bub_falling[explosion].image->w = BUB_EXPL_SIZE ;
-					game->bub_falling[explosion].image->h = BUB_EXPL_SIZE ;
-					game->bub_falling[explosion].position = calculPosBub ( i, j, game->bub_falling[explosion].position, ceil ) ;
-					game->bub_falling[explosion].isExplosing = 0 ;
+					game->bub_falling[game->counter].bub_color = ( game->bub_array[i][j] > 10 ) ? game->bub_array[i][j] - 10 : game->bub_array[i][j] ;
+					game->bub_falling[game->counter].image->y = 0 ;
+					game->bub_falling[game->counter].image->x = 0 ;
+					game->bub_falling[game->counter].image->w = BUB_EXPL_SIZE ;
+					game->bub_falling[game->counter].image->h = BUB_EXPL_SIZE ;
+					game->bub_falling[game->counter].position = calculPosBub ( i, j, game->bub_falling[game->counter].position, ceil ) ;
+					game->bub_falling[game->counter].isExplosing = 0 ;
 					game->fall_head += 1 ;
 					game->nb_bubexplosions += 1 ;
 					game->bub_array[i][j] = 0 ;
+					game->counter += 1 ;
 				}
 			}
 		}
@@ -847,6 +862,7 @@ int delete_bub ( game_t * game, bool color, ceiling_t * ceil )
 	freecomponent_array ( game ) ;
 	bubcomponent_init ( game ) ;
 
+
 	return result ;
 
 }
@@ -856,7 +872,7 @@ void bub_explosion ( game_t * game, unsigned int i )
 	if ( game->bub_falling[i].image->y < ( BUB_EXPL_DIV  - 1 ) * BUB_EXPL_SIZE )
 	{
 		game->bub_falling[i].image->y += BUB_EXPL_SIZE ;
-		game->bub_falling[i].position->y -= 2 ;
+		game->bub_falling[i].position->y -= 3 ;
 	}
 	else
 	{
@@ -866,13 +882,17 @@ void bub_explosion ( game_t * game, unsigned int i )
 
 void bub_falling ( game_t * game, unsigned int i )
 {
-	game->bub_falling[i].position->y += 2 ;
+	game->bub_falling[i].position->y += 3 ;
 }
 
 void bub_disappears ( game_t * game )
 {
 	game->fall_head = 0 ;
 	game->nb_bubexplosions = 0 ;
+	game->counter = 0 ;
+	bubfalling_free_rect ( game ) ;
+	bubfalling_init ( game ) ;
+
 }
 
 bool bub_isOut ( game_t * game, unsigned int i )

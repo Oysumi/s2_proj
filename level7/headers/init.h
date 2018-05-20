@@ -45,6 +45,8 @@ bool we_have_a_winner ( game_t * game ) ;
 
 int sky_is_falling ( timecontrol_t * time, ceiling_t * ceil, game_t * game, bubble_t * bub ) ;
 
-int game_over ( bubble_t * bub, ceiling_t * ceil, game_t * game ) ;
+int game_over ( bubble_t * bub, ceiling_t * ceil, game_t * game, timecontrol_t * time ) ;
+
+int you_win ( bubble_t * bub, ceiling_t * ceil, game_t * game, timecontrol_t * time ) ;
 
 #endif

@@ -135,6 +135,7 @@ void gameInit ( game_t * game, ceiling_t * ceil )
 	/* Initialize bub array which informs about the state of the bubble. If we have a one on a cell, then it means that a bubble has to fall */
 	game->bub_falling = ( explode_t * ) malloc ( BUB_NY * BUB_NX * sizeof ( explode_t ) ) ;
 	bubfalling_init ( game ) ;
+	game->counter = 0 ;
 
 }
 
@@ -151,6 +152,18 @@ void bubfalling_init ( game_t * game )
 		game->bub_falling[i].position = ( SDL_Rect * ) malloc ( sizeof ( SDL_Rect ) ) ;
 	}
 }
+
+void bubfalling_free_rect ( game_t * game )
+{
+	unsigned int i ;
+
+	for ( i = 0 ; i < BUB_NX * BUB_NY ; i++ )
+	{
+		free( game->bub_falling[i].image ) ;
+		free( game->bub_falling[i].position ) ;
+	}
+}
+
 void ceilingInit ( ceiling_t * ceil )
 {
 
@@ -308,12 +321,10 @@ void updateScreen ( bubble_t * bub, SDL_Rect * launcher , init_t * window, game_
 		{
 			bub_falling ( game, i ) ;
 		}
-
 		if ( !bub_isOut ( game, i ) )
 		{
 			SDL_BlitSurface ( game->bub_explosion[game->bub_falling[i].bub_color - 1], game->bub_falling[i].image, window->screen, game->bub_falling[i].position ) ;
 		} 
-		printf("-----------------\n") ;
 	}
 
 	game->nb_bubout = 0 ;
@@ -435,22 +446,38 @@ int sky_is_falling ( timecontrol_t * time, ceiling_t * ceil, game_t * game, bubb
 	{
 		ceil->state += 1 ;
 		update_timer ( time ) ;
-		bubarray_centersrecalcul ( game, ceil, bub ) ;
+		bubarray_centersrecalcul ( game, ceil, bub, time ) ;
 	} 
 
 	return 1 ;
 }
 
-int game_over ( bubble_t * bub, ceiling_t * ceil, game_t * game )
+int game_over ( bubble_t * bub, ceiling_t * ceil, game_t * game, timecontrol_t * time )
 {
 	printf("GAME OVER.\n") ; 
 	ceilingstateInit ( ceil ) ;   
 	bubarray_free ( game ) ; 
-	gameInit ( game, ceil ) ; 
-	bubPosInit ( bub, game ) ;   
-	initBubblesOnBoard ( game, bub ) ;  
-	bubcomponent_init ( game ) ;  
+	gameInit ( game, ceil ) ;    
+	initBubblesOnBoard ( game, bub ) ; 
+	bubPosInit ( bub, game ) ; 
+	bubcomponent_init ( game ) ; 
+	update_timer ( time ) ;
+	get_timer ( time ) ; 
 	return EXIT_SUCCESS ;
+}
+
+int you_win ( bubble_t * bub, ceiling_t * ceil, game_t * game, timecontrol_t * time )
+{
+	printf("CONGRATULATIONS ! YOU WIN !\n") ;
+    ceilingstateInit ( ceil ) ;
+    bubarray_free ( game ) ;  
+    gameInit ( game, ceil ) ;    
+	initBubblesOnBoard ( game, bub ) ;   
+	bubPosInit ( bub, game ) ; 
+	bubcomponent_init ( game ) ;
+	update_timer ( time ) ;
+	get_timer ( time ) ;
+	return EXIT_SUCCESS ; 
 }
 /* NOTE : FAIRE DES FREE POUR CES DEUX FONCTIONS POUR EVITER FUITE MEMOIRE */
 

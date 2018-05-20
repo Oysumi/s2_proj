@@ -44,6 +44,7 @@ typedef struct {
 	int fall_head ;
 	int nb_bubexplosions ;
 	int nb_bubout ;
+	int counter ;
 					    
 	unsigned int currentOrientation ; 	   /* Corresponds to the image of the current launcher */
 }game_t;

@@ -15,7 +15,7 @@ int main ( int argc, char * argv[] )
 	screen = ( init_t * ) malloc ( sizeof ( init_t ) ) ;
 
 	screenInit ( screen ) ;
-
+  
 	frameImageInit ( screen ) ;   
 	launcherImageInit ( screen ) ;                          
 
@@ -48,7 +48,8 @@ int main ( int argc, char * argv[] )
 	bub = ( bubble_t * ) malloc ( sizeof ( bubble_t ) ) ;
 	launcherPos = ( SDL_Rect * ) malloc ( sizeof ( SDL_Rect ) ) ;
 
-	launcherPosInit ( launcherPos ) ;     
+	launcherPosInit ( launcherPos ) ; 
+	initBubblesOnBoard ( game, bub ) ;                
 	bubPosInit ( bub, game ) ;                                   
 
 	/* *********************** INITIALIZATION OF INPUT VARIABLE ******************** */
@@ -62,7 +63,7 @@ int main ( int argc, char * argv[] )
 	/* *********************** INITIALIZATION OF TIME VARIABLES ********************* */
  
 	/* Will regulate the number of image and the speed of the launcher */
-	timecontrol_t * time ; 
+	timecontrol_t * time ;   
   
 	time = ( timecontrol_t * ) malloc ( sizeof ( timecontrol_t ) ) ; 
  
@@ -76,12 +77,10 @@ int main ( int argc, char * argv[] )
 	init_timer ( ceil_fall ) ;
  
 	/* ************************ BEGINNING OF THE GAME ****************************** */
-
-	initBubblesOnBoard ( game, bub ) ;        
   
 	while ( !escape ( in ) )
 	{
-		 
+		  
 		/* We refresh the screen to draw all the images/sprites */  
 		updateScreen ( bub, launcherPos, screen, game, time, ceil ) ;
        
@@ -89,19 +88,7 @@ int main ( int argc, char * argv[] )
 		get_timer ( time ) ; 
 
 		/* We wait the "instructions" given by the user */
-		HandleEvent ( in, bub ) ;
-      
-      	/* We check if the player won */
-      	if ( we_have_a_winner ( game ) )
-      	{
-      		printf("CONGRATULATIONS ! YOU WIN !\n") ;
-      		ceilingstateInit ( ceil ) ;
-      		bubarray_free ( game ) ;  
-		    gameInit ( game, ceil ) ; 
-		    bubPosInit ( bub, game ) ;   
-		    initBubblesOnBoard ( game, bub ) ;   
-		    bubcomponent_init ( game ) ;    
-      	} 
+		HandleEvent ( in, bub ) ;  
 
 		/* We regulate the speed of the launcher thanks to a timer */
 		if ( timereached ( time ) ) 
@@ -116,37 +103,45 @@ int main ( int argc, char * argv[] )
    
 		if ( bub->isMoving )
 		{  
- 
-		  /* We have to check differen t cases *  
+  
+		  /* We have to check differen t cases *    
 		   * 1: The bubble is not moving anymore : maybe it hits the top board, or another bubble *
 		   * 2: The bubble is below the limit of the game board : reinitialization of the game *
 		   * 3: The bubble is moving : we calculate the trajectory and make it move normally */
 
 		  if ( !bubismoving ( bub, game, ceil ) ) /* Include the 3rd case */
-		  {
+		  {  
 		    if ( bub_is_below ( bub ) ) /* 2nd case */
 		    {
 		    	bub_place ( bub, game ) ;
 		    	if ( connex ( game, ceil, true ) == 0 ) 
 		    	{ 
-		        	game_over ( bub, ceil, game ) ; 
+		        	game_over ( bub, ceil, game, time ) ; 
 		        }
 		        else
 		        {
 		        	connex ( game, ceil, false ) ;
 		        	bubPosInit ( bub, game ) ;
 		        }          
-		    }                  
+		    }                    	
 		    else    
 		    {     
-		    	/* 1st case */       	           	  
+		    	/* 1st case */       	            	  
 		      	/* We place the bubble in the array so that it will be displayed */
 		      	bub_place ( bub, game ) ; 
 		      	connex ( game, ceil, true ) ; /* 1st step : with colors */     
-				connex ( game, ceil, false ) ; /* 2nd step : without colors */                       
-
-		    	/* Then we place the new bubble on the launcher */
-		    	bubPosInit ( bub, game ) ;     	         
+				connex ( game, ceil, false ) ; /* 2nd step : without colors */                    
+ 				
+ 				/* We check if the player won */
+      			if ( we_have_a_winner ( game ) )  
+      			{
+      				you_win ( bub, ceil, game, time ) ;   
+      			} 
+      			/* If not, we place the new bubble on the launcher */
+      			else
+		    	{
+		    		bubPosInit ( bub, game ) ;   
+		    	}        	           
 		    }        
 		  }            
 		}        
@@ -157,9 +152,9 @@ int main ( int argc, char * argv[] )
 
 	}
  
-	bubarray_freecenters ( game ) ; 
-	bubarray_init ( game ) ; 
-	free ( bub ) ;
+	bubarray_freecenters ( game ) ;  
+	bubarray_init ( game ) ;         
+	free ( bub ) ;       
 	free ( ceil ) ;
 	free ( game ) ;  
 	free ( launcherPos ) ;

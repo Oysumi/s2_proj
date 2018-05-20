@@ -8,9 +8,11 @@ void bubarray_init ( game_t * game ) ;
 
 void bubarray_initcenters ( game_t * game, ceiling_t * ceil ) ;
 
-int bubarray_centersrecalcul ( game_t * game, ceiling_t * ceil, bubble_t * bub ) ;
+int bubarray_centersrecalcul ( game_t * game, ceiling_t * ceil, bubble_t * bub, timecontrol_t * time ) ;
 
 void bubfalling_init ( game_t * game ) ;
+
+void bubfalling_free_rect ( game_t * game ) ;
 
 void bubarray_free ( game_t * game ) ;
 
@@ -21,6 +23,8 @@ SDL_Rect * calculPosBub ( unsigned int i, unsigned int j, SDL_Rect * bubPos, cei
 void launchermov ( input_t * in, game_t * game, bubble_t * bubble, timecontrol_t * timer ) ;
 
 void bubPosInit ( bubble_t * bubble, game_t * game ) ;
+
+unsigned int give_a_bubble ( bubble_t * bubble, game_t * game ) ;
 
 bool bubismoving ( bubble_t * bub, game_t * game, ceiling_t * ceil ) ;
 
